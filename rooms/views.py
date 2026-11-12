@@ -2,7 +2,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from rooms.models import Room, RoomMembership
@@ -35,7 +35,7 @@ def join_room(request):
         if RoomMembership.objects.filter(room=room, player=player).exists():
             return Response(RoomSerializer(room).data)
         if room.status != Room.Status.WAITING:
-            raise ValidationError({"detail": "Room already started"}, code="conflict")
+            return Response({"detail": "Room already started"}, status=status.HTTP_409_CONFLICT)
         if room.memberships.count() >= room.max_players:
             return Response({"detail": "Room is full"}, status=status.HTTP_409_CONFLICT)
         if RoomMembership.objects.filter(room=room, player__nickname__iexact=player.nickname).exists():
