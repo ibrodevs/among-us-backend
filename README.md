@@ -15,8 +15,8 @@ Original multiplayer 2D social-deduction game. Backend foundation: **Django 5.2 
 ## Endpoints / architecture
 - `POST /api/v1/guests/` — create signed 24-hour guest identity.
 - `POST /api/v1/rooms/`, `POST /api/v1/rooms/join/`, `GET /api/v1/rooms/<code>/`, `POST /api/v1/rooms/<code>/leave/` — initial working room CRUD; no game logic.
-- `POST /api/v1/games/<code>/start/` — **501 until Iliyar implements game rules**.
-- `ws(s)://host/ws/rooms/<code>/` — initial authentication and lobby snapshot; game commands still **NOT_IMPLEMENTED**.
+- `POST /api/v1/games/<code>/start/` — host-only atomic start for 4–10 members; returns the public Room DTO.
+- `ws(s)://host/ws/rooms/<code>/` — guest authentication, public room snapshots and private persisted role delivery, including reconnect.
 - `GET /api/v1/health/` — service health.
 
 ## Team ownership
@@ -26,4 +26,4 @@ Original multiplayer 2D social-deduction game. Backend foundation: **Django 5.2 
 
 Read the API contract in the frontend repository `docs/API-CONTRACT.md` and the backend `docs/ARCHITECTURE.md` before implementing features. Start from `main`, push only to your own feature branch and open a PR after tests/review. No PRs are pre-opened.
 
-**Project status:** foundational REST and WebSocket handshake; real match simulation and client game are not implemented.
+**Project status:** stage A match models, start and secret roles are implemented. Movement, tasks, kills, meetings, voting and win evaluation remain future stages. See [stage A setup and verification](docs/STAGE-A.md) and [WebSocket events](docs/WS-EVENTS.md).

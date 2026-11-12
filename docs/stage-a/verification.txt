@@ -1,0 +1,114 @@
+Stage A verification
+2026-11-12T12:50:07.150963+06:00 (Asia/Bishkek)
+Python 3.12; PostgreSQL 16; Redis 8.10.3
+PostgreSQL row-lock tests enabled; WS unit tests use an isolated in-memory layer.
+A fresh PostgreSQL database was migrated successfully before this run.
+
+$ .venv/bin/python manage.py check
+System check identified no issues (0 silenced).
+Exit: 0
+
+$ .venv/bin/python manage.py makemigrations --check --dry-run
+No changes detected
+Exit: 0
+
+$ .venv/bin/python manage.py migrate --noinput
+Operations to perform:
+  Apply all migrations: admin, auth, contenttypes, game, players, rooms, sessions
+Running migrations:
+  No migrations to apply.
+Exit: 0
+
+$ .venv/bin/python manage.py test --verbosity 2
+Creating test database for alias 'default' ('test_crew_stage_a')...
+Found 39 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: channels, corsheaders, daphne, messages, rest_framework, staticfiles
+  Apply all migrations: admin, auth, contenttypes, game, players, rooms, sessions
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying players.0001_initial... OK
+  Applying rooms.0001_initial... OK
+  Applying game.0001_initial... OK
+  Applying sessions.0001_initial...test_database_unique_constraints (game.tests.test_start.ModelConstraintsTests.test_database_unique_constraints) ... ok
+test_invalid_role_rejected_by_database (game.tests.test_start.ModelConstraintsTests.test_invalid_role_rejected_by_database) ... ok
+test_all_valid_roster_sizes_roles_and_spawns (game.tests.test_start.StartApiTests.test_all_valid_roster_sizes_roles_and_spawns) ... ok
+test_configured_capacity_enforced (game.tests.test_start.StartApiTests.test_configured_capacity_enforced) ... ok
+test_database_failure_during_guest_lookup_is_safe (game.tests.test_start.StartApiTests.test_database_failure_during_guest_lookup_is_safe) ... ok
+test_database_failure_rolls_back_game_states_and_room (game.tests.test_start.StartApiTests.test_database_failure_rolls_back_game_states_and_room) ... ok
+test_existing_game_in_waiting_room_rejected (game.tests.test_start.StartApiTests.test_existing_game_in_waiting_room_rejected) ... ok
+test_host_must_also_be_member (game.tests.test_start.StartApiTests.test_host_must_also_be_member) ... ok
+test_missing_and_invalid_token (game.tests.test_start.StartApiTests.test_missing_and_invalid_token) ... ok
+test_non_member_and_non_host (game.tests.test_start.StartApiTests.test_non_member_and_non_host) ... ok
+test_non_waiting_statuses_rejected (game.tests.test_start.StartApiTests.test_non_waiting_statuses_rejected) ... ok
+test_notifications_only_after_commit (game.tests.test_start.StartApiTests.test_notifications_only_after_commit) ... ok
+test_one_to_three_players (game.tests.test_start.StartApiTests.test_one_to_three_players) ... ok
+test_only_post_allowed (game.tests.test_start.StartApiTests.test_only_post_allowed) ... ok
+test_over_capacity_rejected (game.tests.test_start.StartApiTests.test_over_capacity_rejected) ... ok
+test_public_rest_and_serializer_allowlist (game.tests.test_start.StartApiTests.test_public_rest_and_serializer_allowlist) ... ok
+test_redis_failure_keeps_committed_match_recoverable (game.tests.test_start.StartApiTests.test_redis_failure_keeps_committed_match_recoverable) ... Start notification unavailable; clients can recover through authenticated reconnect
+ok
+test_repeat_start_preserves_roles (game.tests.test_start.StartApiTests.test_repeat_start_preserves_roles) ... ok
+test_role_selection_uses_secure_server_sample (game.tests.test_start.StartApiTests.test_role_selection_uses_secure_server_sample) ... ok
+test_unknown_room (game.tests.test_start.StartApiTests.test_unknown_room) ... ok
+test_guest_auth_required (rooms.tests.RoomApiTests.test_guest_auth_required) ... ok
+test_guest_create_room_join_leave (rooms.tests.RoomApiTests.test_guest_create_room_join_leave) ... ok
+test_health (rooms.tests.RoomApiTests.test_health) ... ok
+test_join_cannot_be_ignored_during_start (game.tests.test_concurrency.StartConcurrencyTests.test_join_cannot_be_ignored_during_start) ... ok
+test_leave_cannot_remove_a_player_during_start (game.tests.test_concurrency.StartConcurrencyTests.test_leave_cannot_remove_a_player_during_start) ... ok
+test_two_parallel_starts_create_one_match (game.tests.test_concurrency.StartConcurrencyTests.test_two_parallel_starts_create_one_match) ... ok
+test_auth_cannot_switch_identity (game.tests.test_websocket.RoomWebsocketTests.test_auth_cannot_switch_identity) ... ok
+test_auth_database_and_redis_failures_are_safe (game.tests.test_websocket.RoomWebsocketTests.test_auth_database_and_redis_failures_are_safe) ... ok
+test_authentication_timeout (game.tests.test_websocket.RoomWebsocketTests.test_authentication_timeout) ... ok
+test_bad_expired_and_non_member_tokens_and_missing_room (game.tests.test_websocket.RoomWebsocketTests.test_bad_expired_and_non_member_tokens_and_missing_room) ... ok
+test_first_frame_must_authenticate (game.tests.test_websocket.RoomWebsocketTests.test_first_frame_must_authenticate) ... ok
+test_four_sockets_receive_only_their_own_roles_and_no_public_leaks (game.tests.test_websocket.RoomWebsocketTests.test_four_sockets_receive_only_their_own_roles_and_no_public_leaks) ... ok
+test_invalid_message_shape_and_stage_b_actions (game.tests.test_websocket.RoomWebsocketTests.test_invalid_message_shape_and_stage_b_actions) ... ok
+test_malformed_and_oversized_frames (game.tests.test_websocket.RoomWebsocketTests.test_malformed_and_oversized_frames) ... ok
+test_membership_rechecked_before_private_delivery (game.tests.test_websocket.RoomWebsocketTests.test_membership_rechecked_before_private_delivery) ... ok
+test_offline_reconnect_uses_same_database_role_and_only_own_tasks (game.tests.test_websocket.RoomWebsocketTests.test_offline_reconnect_uses_same_database_role_and_only_own_tasks) ... ok
+test_private_group_reaches_only_its_owner (game.tests.test_websocket.RoomWebsocketTests.test_private_group_reaches_only_its_owner) ... ok
+test_start_during_auth_group_subscription_is_replayed (game.tests.test_websocket.RoomWebsocketTests.test_start_during_auth_group_subscription_is_replayed) ... ok
+test_unauthenticated_socket_does_not_receive_start (game.tests.test_websocket.RoomWebsocketTests.test_unauthenticated_socket_does_not_receive_start) ... ok
+
+----------------------------------------------------------------------
+Ran 39 tests in 3.004s
+
+OK
+Destroying test database for alias 'default' ('test_crew_stage_a')...
+ OK
+System check identified no issues (0 silenced).
+Exit: 0
+
+$ .venv/bin/python -m pip check
+No broken requirements found.
+Exit: 0
+
+$ git diff --check
+Exit: 0
+
+Live cross-process integration demo:
+$ .venv/bin/python -m game.demo_stage_a --url http://127.0.0.1:18000 --ws-url http://127.0.0.1:18001 --output docs/stage-a/demo.json
+Exit: 0; four real WebSocket clients; HTTP and WS served by separate Daphne processes.
+PostgreSQL: one match, four states, one impostor; each private payload matched its owner row.
+Public payload secrecy, same-state reconnect and repeat-start 409 confirmed.
+Demo guests and rooms removed after screenshot capture.
