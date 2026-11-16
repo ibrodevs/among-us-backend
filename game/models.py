@@ -46,6 +46,7 @@ class PlayerGameState(models.Model):
     direction_x = models.FloatField(default=0)
     direction_y = models.FloatField(default=0)
     emergency_used = models.BooleanField(default=False)
+    move_tokens = models.FloatField(default=2)
     last_move_seq = models.PositiveBigIntegerField(default=0)
     last_move_at = models.DateTimeField(null=True, blank=True)
     kill_available_at = models.DateTimeField(null=True, blank=True)

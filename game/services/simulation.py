@@ -311,12 +311,14 @@ def command(code, player_id, payload, now=None):
                 "Недопустимое направление",
             )
             require(seq > state.last_move_seq, "STALE_SEQ", "Устаревшая команда")
-            require(
-                state.last_move_at is None
-                or (now - state.last_move_at).total_seconds() >= 0.075,
-                "RATE_LIMITED",
-                "Слишком частые команды",
+            elapsed = (
+                max(0, (now - state.last_move_at).total_seconds())
+                if state.last_move_at
+                else 1
             )
+            available = min(2, state.move_tokens + elapsed * 10)
+            require(available >= 1, "RATE_LIMITED", "Слишком частые команды")
+            state.move_tokens = available - 1
             (
                 state.direction_x,
                 state.direction_y,
@@ -327,6 +329,7 @@ def command(code, player_id, payload, now=None):
                 update_fields=[
                     "direction_x",
                     "direction_y",
+                    "move_tokens",
                     "last_move_seq",
                     "last_move_at",
                 ]

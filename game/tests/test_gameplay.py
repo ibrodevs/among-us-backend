@@ -74,7 +74,8 @@ class GameplayTests(TestCase):
         state = self.game.player_states.get(player=self.players[1])
         self.assertAlmostEqual(math.hypot(state.x - 780, state.y - 450), 15, places=4)
         self.denied("STALE_SEQ", 1, "player.move", seq=1, direction={"x": 1, "y": 0})
-        self.denied("RATE_LIMITED", 1, "player.move", seq=2, direction={"x": 1, "y": 0})
+        self.call(1, "player.move", seq=2, direction={"x": 0, "y": 0})
+        self.denied("RATE_LIMITED", 1, "player.move", seq=3, direction={"x": 1, "y": 0})
         for value in [float("nan"), float("inf"), True, 2, "1", 10**400]:
             self.denied(
                 "BAD_PAYLOAD", 2, "player.move", seq=2, direction={"x": value, "y": 0}

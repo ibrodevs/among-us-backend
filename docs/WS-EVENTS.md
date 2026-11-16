@@ -6,7 +6,7 @@ Route `/ws/rooms/{CODE}/`. First frame `{type:"auth",token:"..."}` within 10s. N
 
 | type | Fields | Server checks |
 |---|---|---|
-| player.move | seq: positive safe integer, direction:{x,y} finite numbers in [-1,1] | alive, playing, increasing seq, 75ms player throttle; no trusted coordinates |
+| player.move | seq: positive safe integer, direction:{x,y} finite numbers in [-1,1] | alive, playing, increasing seq, 10/s token bucket, burst2; no trusted coordinates |
 | task.begin | task_id:UUID | owner, crew, alive, playing, within85px; creates a one-use challenge/timestamp |
 | task.complete | task_id:UUID, solution:number[] | same checks, minimum3s wires/sequence or8s upload; exact server challenge; once only |
 | player.kill | target_player_id:UUID | impostor, both alive, target crew, ≤90px,25s cooldown,playing |
@@ -15,7 +15,7 @@ Route `/ws/rooms/{CODE}/`. First frame `{type:"auth",token:"..."}` within 10s. N
 | vote.cast | target_player_id:UUID or null | alive, voting stage, target alive, one immutable vote; null is Skip |
 | ping | none | renews connection lease; pong reply |
 
-All identities come from auth, never a submitted player_id. Maximum16KiB text frames; per-connection20 commands/s plus durable movement throttle. Initial cooldown25s. Input expires after350ms without refresh; simulation caps delayed tick at150ms and uses20ms collision substeps. Commands do not decide elapsed movement time. Browser sends input at10Hz. Clock `run_game_worker` runs independently at10Hz and serializes on Room then Game locks. Restart recovers DB phases/timers/roles.
+All identities come from auth, never a submitted player_id. Maximum16KiB text frames; per-connection20 commands/s plus durable movement token bucket (10/s, capacity2). Initial cooldown25s. Input expires after350ms without refresh; simulation caps delayed tick at150ms and uses20ms collision substeps. Commands do not decide elapsed movement time. Browser sends input at10Hz. Clock `run_game_worker` runs independently at10Hz and serializes on Room then Game locks. Restart recovers DB phases/timers/roles.
 
 ## Server DTOs
 
