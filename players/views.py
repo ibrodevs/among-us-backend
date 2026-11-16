@@ -1,16 +1,18 @@
 from rest_framework import status
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from players.authentication import create_guest_token
 from players.models import Player
 from players.serializers import GuestCreateSerializer
+from players.throttling import GuestCreationThrottle
 
 
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@throttle_classes([GuestCreationThrottle])
 def create_guest(request):
     serializer = GuestCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)

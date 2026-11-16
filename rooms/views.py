@@ -1,3 +1,5 @@
+from unicodedata import normalize
+
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -7,7 +9,7 @@ from rest_framework.response import Response
 
 from rooms.models import Room, RoomMembership
 from rooms.serializers import RoomCreateSerializer, RoomJoinSerializer, RoomSerializer
-from rooms.services import create_room_for_player
+from rooms.services import create_room_for_player, notify_lobby_changed
 
 
 def get_members_room(code: str, player):
@@ -38,10 +40,13 @@ def join_room(request):
             return Response({"detail": "Room already started"}, status=status.HTTP_409_CONFLICT)
         if room.memberships.count() >= room.max_players:
             return Response({"detail": "Room is full"}, status=status.HTTP_409_CONFLICT)
-        if RoomMembership.objects.filter(room=room, player__nickname__iexact=player.nickname).exists():
+        nickname = normalize("NFC", player.nickname).casefold()
+        member_names = room.memberships.values_list("player__nickname", flat=True)
+        if any(normalize("NFC", name).casefold() == nickname for name in member_names):
             return Response({"detail": "Nickname already used in this room"}, status=status.HTTP_409_CONFLICT)
         RoomMembership.objects.create(room=room, player=player)
-    return Response(RoomSerializer(room).data)
+        notify_lobby_changed(room.code)
+        return Response(RoomSerializer(room).data)
 
 
 @api_view(["GET"])
@@ -57,10 +62,11 @@ def leave_room(request, code: str):
         if room.status != Room.Status.WAITING:
             return Response({"detail": "In-game leaving will be handled by the game engine"}, status=status.HTTP_409_CONFLICT)
         membership.delete()
-        next_host = room.memberships.select_related("player").order_by("joined_at").first()
+        next_host = room.memberships.select_related("player").order_by("joined_at", "id").first()
         if next_host is None:
             room.delete()
         elif room.host_id == request.user.player.id:
             room.host = next_host.player
             room.save(update_fields=["host"])
+        notify_lobby_changed(room.code)
     return Response(status=status.HTTP_204_NO_CONTENT)
