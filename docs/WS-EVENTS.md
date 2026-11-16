@@ -1,86 +1,35 @@
-# Stage A WebSocket events
+# WebSocket protocol v1 — implemented B/C extension
 
-Compatible with [frontend API-CONTRACT.md](https://github.com/ibrodevs/among-us-frontend/blob/main/docs/API-CONTRACT.md). This document describes the implemented stage A subset; commands for stages B/C remain `NOT_IMPLEMENTED`.
+Route `/ws/rooms/{CODE}/`. First frame `{type:"auth",token:"..."}` within 10s. No token in URL. Origin must exactly match `CORS_ALLOWED_ORIGINS`. Auth success sends `auth.ok {player_id}`, `room.snapshot {room}`, then for started matches the backward-compatible private `game.started` followed by public `game.snapshot` and private `game.self`. Both versioned game DTOs include `protocol_version:1`, `game_id`, `state_version`. Ignore snapshots older than the current version. Unknown commands return `BAD_PAYLOAD`.
 
-## Connection and authentication
+## Client commands
 
-Connect to `/ws/rooms/ABC234/` and send a JSON text frame within 10 seconds:
+| type | Fields | Server checks |
+|---|---|---|
+| player.move | seq: positive safe integer, direction:{x,y} finite numbers in [-1,1] | alive, playing, increasing seq, 75ms player throttle; no trusted coordinates |
+| task.begin | task_id:UUID | owner, crew, alive, playing, within85px; creates a one-use challenge/timestamp |
+| task.complete | task_id:UUID, solution:number[] | same checks, minimum3s wires/sequence or8s upload; exact server challenge; once only |
+| player.kill | target_player_id:UUID | impostor, both alive, target crew, ≤90px,25s cooldown,playing |
+| body.report | body_id:UUID | alive,playing,unreported,≤110px |
+| meeting.call | none | alive,playing,within85px of central console,once/match |
+| vote.cast | target_player_id:UUID or null | alive, voting stage, target alive, one immutable vote; null is Skip |
+| ping | none | renews connection lease; pong reply |
 
-```json
-{"type":"auth","token":"<signed guest token>"}
-```
+All identities come from auth, never a submitted player_id. Maximum16KiB text frames; per-connection20 commands/s plus durable movement throttle. Initial cooldown25s. Input expires after350ms without refresh; simulation caps delayed tick at150ms and uses20ms collision substeps. Commands do not decide elapsed movement time. Browser sends input at10Hz. Clock `run_game_worker` runs independently at10Hz and serializes on Room then Game locks. Restart recovers DB phases/timers/roles.
 
-The token belongs in this frame, never the URL. The server validates its signature, 24-hour lifetime and current room membership before subscribing to either group. Authentication cannot change identities within an existing connection.
+## Server DTOs
 
-The server replies in this order:
+`game.snapshot`: `{protocol_version:1,game_id,state_version,server_time,phase,players:[{id,nickname,x,y,alive}],bodies:[{id,player_id,x,y}],tasks_completed,tasks_total,meeting,last_meeting_result,result?}`. Public DTO has **no roles, assignments, challenges, tokens or kill actor** while a game is active. `phase` is playing/meeting/finished. `meeting` is null or `{id,reporter_id,stage,deadline_at,votes_cast,alive_voters,result}`; `stage` is discussion/voting/result. Vote target totals appear only at result. Finished `result` is `{winner,reason,players_with_roles:[{id,nickname,role}]}`.
 
-```json
-{"type":"auth.ok","player_id":"c2a3f506-65ee-4d65-8564-769f1a394372"}
-{"type":"room.snapshot","room":{"id":"cd17c1f3-519c-44a3-85ec-dc7778ecc67a","code":"ABC234","status":"playing","min_players":4,"max_players":10,"host_player_id":"c2a3f506-65ee-4d65-8564-769f1a394372","players":[{"id":"c2a3f506-65ee-4d65-8564-769f1a394372","nickname":"Player0","is_host":true,"is_connected":true}],"created_at":"2026-11-12T06:00:00Z"}}
-```
+`game.self`: `{protocol_version:1,game_id,state_version,role,alive,last_move_seq,kill_available_at,emergency_used,has_voted,tasks:[{id,task_type,task_point,is_completed,started_at,challenge,x,y,seconds,point,type}]}`. Only that authenticated player receives it. Tasks are wires/sequence/upload. A begin challenge has 3 wire connector destination indices, or4 sequence indices0–3, or[] for upload. Complete requires the same index array after minimum time. Moving out of range cancels unfinished attempts; meetings invalidate them. This verifies assignment, position, duration and submitted solution; it **does not attest human interaction** or prevent a custom client automating a known challenge.
 
-The example abbreviates `players` to one entry; the actual snapshot contains every member. `room` is the existing `RoomSerializer` DTO, unchanged, without roles, tokens or assignments.
+`game.started` retains Stage A shape (role/tasks owner-only). `room.snapshot` retains the unchanged public Room DTO. Additive events (with protocol_version1): `player.moved {player_id,x,y,seq}`, `player.died {player_id}`, `body.spawned {body_id,x,y}`, `task.progress {completed,total}`, `meeting.started {meeting_id}` (snapshot supplies deadlines), `vote.updated {votes_cast,alive_voters}`, `meeting.ended {ejected_player_id,counts,next_phase}`, `game.ended {winner,reason,players_with_roles}`. Events are accompanied by authoritative snapshots; consume snapshots to recover missed events. UI uses server time offset and never advances phases itself.
 
-If this member already has a match state, a private `game.started` follows immediately. A member waiting in the lobby receives it after a successful host start.
+## Rules / explicit contract decisions
 
-## Private start and reconnect
-
-Only the authenticated owner receives this message:
-
-```json
-{"type":"game.started","game_id":"56483341-a306-4c55-99c9-85c805680741","room_code":"ABC234","started_at":"2026-11-12T06:01:00+00:00","state_version":1,"role":"crew","tasks":[]}
-```
-
-Another connection receives its own role, potentially `impostor`. Names do not determine roles. Stage A creates no assignments, so `tasks` starts empty; the schema and owner-filtered serializer are ready for later assignments.
-
-Reconnect to the same route with the same valid token. The server reads the existing DB state and replays `auth.ok`, the current public room and the same private `game.started`; it never rerolls roles. Subscribe-before-read also covers a start racing with authentication. A start event can be delivered more than once during this race: clients should replace their state using `(game_id, state_version)` rather than append assignments.
-
-```ts
-type OwnTask = {
-  id: string;
-  task_type: string;
-  task_point: string;
-  is_completed: boolean;
-};
-
-type GameStarted = {
-  type: "game.started";
-  game_id: string;
-  room_code: string;
-  started_at: string; // ISO 8601 UTC
-  state_version: number;
-  role: "crew" | "impostor";
-  tasks: OwnTask[];
-};
-```
-
-## Delivery and privacy
-
-- `room_<CODE>` receives only `{"type":"room.snapshot","room":<public Room DTO>}` after the start transaction commits.
-- `game_<CODE>_player_<UUID>` is a private group joined only after membership authentication. All authenticated tabs belonging to that player may receive the same own state.
-- The private channel-layer notification is only `{"type":"game.started"}`. Its handler checks membership again and loads the role and assignments for the connection's authenticated player. No role map, token or caller-provided player identity is used.
-- The public handler also checks membership and serializes the current public room before sending. An unauthenticated connection joins neither group.
-- A disconnect preserves the roster, match, role and coordinates. The existing `is_connected` boolean is advisory presence, not match eligibility or an authoritative connection count.
-
-Notifications run with `transaction.on_commit`. A DB failure rolls back the room, match and player states together and returns safe REST `503` detail. A Redis failure after commit leaves a valid match; reconnect recovers its state once Redis is available. No durable event queue is introduced in stage A.
-
-## Other messages and errors
-
-```json
-{"type":"ping"}
-{"type":"pong"}
-{"type":"error","code":"UNAUTHORIZED","detail":"Invalid guest or room"}
-```
-
-| Condition | Error code | Close code |
-| --- | --- | --- |
-| Missing/invalid/expired token, missing room, non-member, membership removed | `UNAUTHORIZED` | `4401` |
-| No auth within 10 seconds or first message is not auth | `UNAUTHORIZED` | `4401` |
-| Second auth after success | `ALREADY_AUTHENTICATED` | Connection remains open |
-| Invalid JSON or binary frame | `BAD_PAYLOAD` | `4400` |
-| Text frame larger than 16 KiB | `BAD_PAYLOAD` | `1009` |
-| Invalid JSON object/type after auth | `BAD_PAYLOAD` | Connection remains open |
-| DB or channel-layer unavailable during auth/event handling | `SERVICE_UNAVAILABLE` | `1013` (retry later) |
-| Unknown or stage B/C command | `NOT_IMPLEMENTED` | Connection remains open |
-
-Movement, kill, report, task completion, meetings, voting, public game simulation snapshots and timers are outside stage A. No win evaluation runs at start.
+- Self-votes allowed. Tied candidates or Skip ≥ leading candidate → no ejection. Strictly greater unique candidate → ejection. All living votes may finish early; otherwise30s discussion,30s voting,5s result. No built-in chat; friends discuss over their chosen communication channel.
+- Dead crew cannot do tasks, so their remaining task obligations retire from the required total. Alive crew retain3 tasks. Kill/ejection/departure re-evaluates victory. Atomic order: no impostors→crew, parity→impostor, all active tasks complete→crew. No automatic win at start.
+- Explicit leave removes membership, retains historical game state and marks the player dead. Host transfers. Disconnect alone does not kill or remove membership. Finished rooms keep match history; no rematch mutates a previous game.
+- Multiple tabs allowed with independent45s leases; ping every15s. Old-tab disconnect cannot clear another live lease. Clock clears expired leases. Presence is advisory, never eligibility.
+- `error {code,detail}` codes: BAD_PAYLOAD, UNAUTHORIZED, FORBIDDEN, INVALID_PHASE, STALE_SEQ, RATE_LIMITED, OUT_OF_RANGE, COOLDOWN, ALREADY_DONE, TOO_EARLY, BAD_SOLUTION, SERVICE_UNAVAILABLE. Auth failures close4401, invalid JSON4400, oversize1009, service outage1013.
+- Map JSON is shared byte-for-byte (`game/map.json` / `src/features/game/engine/map.json`). Version1 is1600×900,28px hitbox,150px/s. CI compares both copies; change the version and both copies together.

@@ -28,4 +28,8 @@ Original multiplayer 2D social-deduction game. Backend foundation: **Django 5.2 
 
 Read the API contract in the frontend repository `docs/API-CONTRACT.md` and the backend `docs/ARCHITECTURE.md` before implementing features. Start from `main`, push only to your own feature branch and open a PR after tests/review. No PRs are pre-opened.
 
-**Project status:** stage A match models, start and secret roles are implemented. Movement, tasks, kills, meetings, voting and win evaluation remain future stages. See [stage A setup and verification](docs/STAGE-A.md) and [WebSocket events](docs/WS-EVENTS.md).
+**Project status:** stage A match models, start and secret roles are implemented. Movement, tasks, kills, meetings, voting and win evaluation are implemented in the separate gameplay review candidate. See [stage A setup and verification](docs/STAGE-A.md) and [WebSocket events](docs/WS-EVENTS.md).
+
+
+## Full game runtime
+Install `requirements.lock.txt` for reproducible versions. Apply migrations, then run Daphne **and** `python manage.py run_game_worker` with the same PostgreSQL DATABASE_URL and Redis REDIS_URL. Without the clock there is no authoritative movement or automatic phase advancement. See [protocol](docs/WS-EVENTS.md), [deployment/rollback](docs/DEPLOYMENT.md), and verification reports in `docs/verification/`. Production requires PostgreSQL, Redis, an explicit strong key and exact CORS/WS origins.

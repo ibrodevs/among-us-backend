@@ -1,4 +1,8 @@
 from django.db import transaction
+from django.utils import timezone
+from datetime import timedelta
+from game.physics import MAP
+from game.models import TaskAssignment
 from rest_framework.exceptions import APIException, NotFound, PermissionDenied
 
 from game.models import GameSession, PlayerGameState
@@ -22,11 +26,18 @@ def start_game(*, code, player):
 
     # join_room and leave_room take this same Room lock. The roster cannot
     # change between this read and commit through the existing room API.
-    members = list(RoomMembership.objects.select_for_update().filter(room=room).order_by("joined_at", "pk"))
+    members = list(
+        RoomMembership.objects.select_for_update()
+        .filter(room=room)
+        .order_by("joined_at", "pk")
+    )
     player_ids = [member.player_id for member in members]
     if player.pk not in player_ids or room.host_id != player.pk:
         raise PermissionDenied("Only the room host can start the game")
-    if room.status != Room.Status.WAITING or GameSession.objects.filter(room=room).exists():
+    if (
+        room.status != Room.Status.WAITING
+        or GameSession.objects.filter(room=room).exists()
+    ):
         raise StartConflict()
     if len(members) < 4:
         raise StartConflict("At least 4 players required")
@@ -34,11 +45,31 @@ def start_game(*, code, player):
         raise StartConflict("Too many players in room")
 
     roles = assign_roles(player_ids)
-    game = GameSession.objects.create(room=room)
-    PlayerGameState.objects.bulk_create([
-        PlayerGameState(game=game, player_id=player_id, role=roles[player_id], x=point[0], y=point[1])
-        for player_id, point in zip(player_ids, SPAWN_POINTS)
-    ])
+    now = timezone.now()
+    game = GameSession.objects.create(room=room, last_tick_at=now)
+    PlayerGameState.objects.bulk_create(
+        [
+            PlayerGameState(
+                game=game,
+                player_id=player_id,
+                role=roles[player_id],
+                x=point[0],
+                y=point[1],
+                kill_available_at=now + timedelta(seconds=25),
+            )
+            for player_id, point in zip(player_ids, SPAWN_POINTS)
+        ]
+    )
+    TaskAssignment.objects.bulk_create(
+        [
+            TaskAssignment(
+                game=game, player_id=pid, task_type=t["type"], task_point=t["point"]
+            )
+            for pid in player_ids
+            if roles[pid] == "crew"
+            for t in MAP["tasks"]
+        ]
+    )
     room.status = Room.Status.PLAYING
     room.save(update_fields=["status"])
     room_data = RoomSerializer(room).data
