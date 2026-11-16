@@ -88,7 +88,15 @@ CHANNEL_LAYERS = {
     "default": (
         {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
-            "CONFIG": {"hosts": [REDIS_URL]},
+            "CONFIG": {
+                "hosts": [
+                    {
+                        "address": REDIS_URL,
+                        "socket_timeout": 10,
+                        "socket_connect_timeout": 5,
+                    }
+                ]
+            },
         }
         if REDIS_URL
         else {"BACKEND": "channels.layers.InMemoryChannelLayer"}
