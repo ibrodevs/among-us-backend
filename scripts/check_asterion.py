@@ -1,5 +1,6 @@
 """Validate actual collision reachability in both configurations, not just JSON counts."""
 
+import math
 from collections import deque
 from game.maps import get_map
 from game.physics import blocked
@@ -40,6 +41,15 @@ def validate(mode):
     )
     for name, x, y in goals:
         assert (round(x / step), round(y / step)) in visited, (mode, name, x, y)
+    for route in m["navigation"]["routes"]:
+        for a, b in zip(route["waypoints"], route["waypoints"][1:]):
+            count = max(1, math.ceil(math.hypot(a["x"] - b["x"], a["y"] - b["y"]) / 10))
+            for i in range(count + 1):
+                assert not blocked(
+                    a["x"] + (b["x"] - a["x"]) * i / count,
+                    a["y"] + (b["y"] - a["y"]) * i / count,
+                    m,
+                ), ("navigation segment intersects collider", route["door_id"])
     for v in m["vents"]:
         for link in v["connected_vent_ids"]:
             target = next(t for t in m["vents"] if t["id"] == link)

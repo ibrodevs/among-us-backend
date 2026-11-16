@@ -23,7 +23,7 @@ The updated backend main was audited at `6d89208` (previous gameplay work merged
 ## Evidence obtained
 
 - Baseline: 69 backend tests passed.
-- Current checkpoint: `python manage.py test --noinput` — **91 tests passed**, PostgreSQL + Redis, including real PostgreSQL concurrent critical sabotage and actual Channels socket privacy checks.
+- Current checkpoint: `python manage.py test --noinput` — **95 tests passed**, PostgreSQL + Redis, including real PostgreSQL concurrent critical sabotage and actual Channels socket privacy checks.
 - `python scripts/check_map.py` — both v1 and Asterion match frontend byte-for-byte; legacy file unchanged.
 - `python -m scripts.check_asterion` — full: 5,656 reachable cells / 67 goals / 21 rooms; compact: 2,520 cells / 31 goals / 9 rooms.
 - Paired frontend has passed 20 real task-panel submissions through WebSocket to these Django validators. The panel suite explicitly seeds its disposable local test assignments; it does not mock requests or replace the server.
@@ -31,8 +31,8 @@ The updated backend main was audited at `6d89208` (previous gameplay work merged
 
 ## Verification still in progress
 
-- Full real-browser vent → repair → door collision → kill → ghost task → report → vote/parity flow after the latest input/clock changes.
-- Real crew task victory and critical timeout; multi-room load, reconnect and worker restart measurement.
+- Full vent → repair → door collision → kill → ghost task → report → Skip/parity flow passed on four real browsers. Crew task victory and oxygen timeout after reconnect also passed without DB-position fixtures.
+- Multi-room load, reconnect and worker restart measurement remain pending.
 - Final frontend/browser regression, protocol documentation, CI and pull request review.
 - Optional-role multiplayer balancing and physical iOS hardware remain distinct from desktop WebKit checks; do not claim physical-device results.
 

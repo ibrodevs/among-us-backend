@@ -279,6 +279,7 @@ def enrich_public(game, data, viewer_id, now):
             .order_by("-created_at")[:50]
         ][::-1]
         data["meeting"]["channel"] = "ghost" if not observer.alive else "living"
+        data["meeting"]["source"] = "report" if meeting.corpse_id else "emergency"
     return data
 
 

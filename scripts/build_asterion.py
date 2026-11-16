@@ -1,6 +1,8 @@
 """Deterministic original Asterion layout, not a scaled v1 map."""
 
 import json
+import math
+from collections import deque
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -205,7 +207,28 @@ def build():
             decor.append(
                 dict(
                     id=r["id"] + "-machine" + str(j),
-                    kind=["reactor","console","engine","pipes","console","console","console","antenna","console","telescope","capsule","capsule","pod","pipes","bed","crate","fuel","servers","tram","airlock"][i],
+                    kind=[
+                        "reactor",
+                        "console",
+                        "engine",
+                        "pipes",
+                        "console",
+                        "console",
+                        "console",
+                        "antenna",
+                        "console",
+                        "telescope",
+                        "capsule",
+                        "capsule",
+                        "pod",
+                        "pipes",
+                        "bed",
+                        "crate",
+                        "fuel",
+                        "servers",
+                        "tram",
+                        "airlock",
+                    ][i],
                     room_id=r["id"],
                     bounds=q,
                 )
@@ -280,6 +303,60 @@ def build():
         for r in rooms
         if r["compact"] and r["id"] != "nexus"
     ]
+    routes = []
+    by_id = {r["id"]: r for r in rooms}
+    for corridor in corridors:
+        a, b = [by_id[key] for key in corridor["rooms"]]
+        region = [a["bounds"], b["bounds"], corridor["bounds"]]
+
+        def free(cell):
+            x, y = cell[0] * 20 + 10, cell[1] * 20 + 10
+            return any(contains(r, x, y) for r in region) and not any(
+                x - 14 < r["x"] + r["width"]
+                and x + 14 > r["x"]
+                and y - 14 < r["y"] + r["height"]
+                and y + 14 > r["y"]
+                for r in walls
+            )
+
+        start = ((a["bounds"]["x"] + 440) // 20, (a["bounds"]["y"] + 250) // 20)
+        goal = ((b["bounds"]["x"] + 440) // 20, (b["bounds"]["y"] + 250) // 20)
+        queue = deque([start])
+        previous = {start: None}
+        while queue and goal not in previous:
+            x, y = queue.popleft()
+            for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                cell = (x + dx, y + dy)
+                if cell not in previous and free(cell):
+                    previous[cell] = (x, y)
+                    queue.append(cell)
+        assert goal in previous, corridor["id"]
+        path = []
+        cell = goal
+        while cell is not None:
+            path.append(cell)
+            cell = previous[cell]
+        path.reverse()
+        turns = [
+            q
+            for j, q in enumerate(path)
+            if j in [0, len(path) - 1]
+            or (q[0] - path[j - 1][0], q[1] - path[j - 1][1])
+            != (path[j + 1][0] - q[0], path[j + 1][1] - q[1])
+        ]
+        points = [dict(x=x * 20 + 10, y=y * 20 + 10) for x, y in turns]
+        routes.append(
+            dict(
+                rooms=corridor["rooms"],
+                door_id=corridor["id"],
+                compact=a["compact"] and b["compact"],
+                waypoints=points,
+                distance=sum(
+                    math.hypot(q["x"] - p["x"], q["y"] - p["y"])
+                    for p, q in zip(points, points[1:])
+                ),
+            )
+        )
     return dict(
         map_id="asterion",
         version=2,
@@ -312,6 +389,7 @@ def build():
                 for r in rooms
             ],
             edges=edges,
+            routes=routes,
         ),
         occlusion=[*walls],
         audio_zones=[

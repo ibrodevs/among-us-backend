@@ -3875,6 +3875,916 @@
         "nexus",
         "biodome"
       ]
+    ],
+    "routes": [
+      {
+        "rooms": [
+          "reactor",
+          "power"
+        ],
+        "door_id": "reactor--power",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 650,
+            "y": 1230
+          },
+          {
+            "x": 1790,
+            "y": 1230
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "reactor",
+          "engines"
+        ],
+        "door_id": "reactor--engines",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 650,
+            "y": 1230
+          },
+          {
+            "x": 710,
+            "y": 1230
+          },
+          {
+            "x": 710,
+            "y": 1730
+          },
+          {
+            "x": 730,
+            "y": 1730
+          },
+          {
+            "x": 730,
+            "y": 1890
+          },
+          {
+            "x": 650,
+            "y": 1890
+          },
+          {
+            "x": 650,
+            "y": 1970
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "power",
+          "security"
+        ],
+        "door_id": "power--security",
+        "compact": true,
+        "waypoints": [
+          {
+            "x": 1790,
+            "y": 1230
+          },
+          {
+            "x": 2930,
+            "y": 1230
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "power",
+          "cooling"
+        ],
+        "door_id": "power--cooling",
+        "compact": true,
+        "waypoints": [
+          {
+            "x": 1790,
+            "y": 1230
+          },
+          {
+            "x": 1850,
+            "y": 1230
+          },
+          {
+            "x": 1850,
+            "y": 1730
+          },
+          {
+            "x": 1870,
+            "y": 1730
+          },
+          {
+            "x": 1870,
+            "y": 1890
+          },
+          {
+            "x": 1790,
+            "y": 1890
+          },
+          {
+            "x": 1790,
+            "y": 1970
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "engines",
+          "cooling"
+        ],
+        "door_id": "engines--cooling",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 650,
+            "y": 1970
+          },
+          {
+            "x": 1790,
+            "y": 1970
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "engines",
+          "maintenance"
+        ],
+        "door_id": "engines--maintenance",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 650,
+            "y": 1970
+          },
+          {
+            "x": 710,
+            "y": 1970
+          },
+          {
+            "x": 710,
+            "y": 2470
+          },
+          {
+            "x": 730,
+            "y": 2470
+          },
+          {
+            "x": 730,
+            "y": 2630
+          },
+          {
+            "x": 650,
+            "y": 2630
+          },
+          {
+            "x": 650,
+            "y": 2710
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "cooling",
+          "nexus"
+        ],
+        "door_id": "cooling--nexus",
+        "compact": true,
+        "waypoints": [
+          {
+            "x": 1790,
+            "y": 1970
+          },
+          {
+            "x": 2930,
+            "y": 1970
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "cooling",
+          "medical"
+        ],
+        "door_id": "cooling--medical",
+        "compact": true,
+        "waypoints": [
+          {
+            "x": 1790,
+            "y": 1970
+          },
+          {
+            "x": 1850,
+            "y": 1970
+          },
+          {
+            "x": 1850,
+            "y": 2470
+          },
+          {
+            "x": 1870,
+            "y": 2470
+          },
+          {
+            "x": 1870,
+            "y": 2630
+          },
+          {
+            "x": 1790,
+            "y": 2630
+          },
+          {
+            "x": 1790,
+            "y": 2710
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "maintenance",
+          "medical"
+        ],
+        "door_id": "maintenance--medical",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 650,
+            "y": 2710
+          },
+          {
+            "x": 1790,
+            "y": 2710
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "bridge",
+          "navigation"
+        ],
+        "door_id": "bridge--navigation",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 1790,
+            "y": 490
+          },
+          {
+            "x": 2930,
+            "y": 490
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "bridge",
+          "power"
+        ],
+        "door_id": "bridge--power",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 1790,
+            "y": 490
+          },
+          {
+            "x": 1850,
+            "y": 490
+          },
+          {
+            "x": 1850,
+            "y": 990
+          },
+          {
+            "x": 1870,
+            "y": 990
+          },
+          {
+            "x": 1870,
+            "y": 1150
+          },
+          {
+            "x": 1790,
+            "y": 1150
+          },
+          {
+            "x": 1790,
+            "y": 1230
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "navigation",
+          "comms"
+        ],
+        "door_id": "navigation--comms",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 2930,
+            "y": 490
+          },
+          {
+            "x": 4070,
+            "y": 490
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "navigation",
+          "security"
+        ],
+        "door_id": "navigation--security",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 2930,
+            "y": 490
+          },
+          {
+            "x": 2990,
+            "y": 490
+          },
+          {
+            "x": 2990,
+            "y": 990
+          },
+          {
+            "x": 3010,
+            "y": 990
+          },
+          {
+            "x": 3010,
+            "y": 1150
+          },
+          {
+            "x": 2930,
+            "y": 1150
+          },
+          {
+            "x": 2930,
+            "y": 1230
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "comms",
+          "observatory"
+        ],
+        "door_id": "comms--observatory",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 4070,
+            "y": 490
+          },
+          {
+            "x": 4130,
+            "y": 490
+          },
+          {
+            "x": 4130,
+            "y": 990
+          },
+          {
+            "x": 4150,
+            "y": 990
+          },
+          {
+            "x": 4150,
+            "y": 1150
+          },
+          {
+            "x": 4070,
+            "y": 1150
+          },
+          {
+            "x": 4070,
+            "y": 1230
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "security",
+          "observatory"
+        ],
+        "door_id": "security--observatory",
+        "compact": true,
+        "waypoints": [
+          {
+            "x": 2930,
+            "y": 1230
+          },
+          {
+            "x": 4070,
+            "y": 1230
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "security",
+          "nexus"
+        ],
+        "door_id": "security--nexus",
+        "compact": true,
+        "waypoints": [
+          {
+            "x": 2930,
+            "y": 1230
+          },
+          {
+            "x": 2930,
+            "y": 1970
+          }
+        ],
+        "distance": 740.0
+      },
+      {
+        "rooms": [
+          "observatory",
+          "storage"
+        ],
+        "door_id": "observatory--storage",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 4070,
+            "y": 1230
+          },
+          {
+            "x": 5210,
+            "y": 1230
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "observatory",
+          "cargo"
+        ],
+        "door_id": "observatory--cargo",
+        "compact": true,
+        "waypoints": [
+          {
+            "x": 4070,
+            "y": 1230
+          },
+          {
+            "x": 4130,
+            "y": 1230
+          },
+          {
+            "x": 4130,
+            "y": 1730
+          },
+          {
+            "x": 4150,
+            "y": 1730
+          },
+          {
+            "x": 4150,
+            "y": 1890
+          },
+          {
+            "x": 4070,
+            "y": 1890
+          },
+          {
+            "x": 4070,
+            "y": 1970
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "medical",
+          "biodome"
+        ],
+        "door_id": "medical--biodome",
+        "compact": true,
+        "waypoints": [
+          {
+            "x": 1790,
+            "y": 2710
+          },
+          {
+            "x": 2930,
+            "y": 2710
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "medical",
+          "laboratory"
+        ],
+        "door_id": "medical--laboratory",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 1790,
+            "y": 2710
+          },
+          {
+            "x": 1850,
+            "y": 2710
+          },
+          {
+            "x": 1850,
+            "y": 3210
+          },
+          {
+            "x": 1870,
+            "y": 3210
+          },
+          {
+            "x": 1870,
+            "y": 3370
+          },
+          {
+            "x": 1790,
+            "y": 3370
+          },
+          {
+            "x": 1790,
+            "y": 3450
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "laboratory",
+          "oxygen"
+        ],
+        "door_id": "laboratory--oxygen",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 1790,
+            "y": 3450
+          },
+          {
+            "x": 2930,
+            "y": 3450
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "biodome",
+          "transit"
+        ],
+        "door_id": "biodome--transit",
+        "compact": true,
+        "waypoints": [
+          {
+            "x": 2930,
+            "y": 2710
+          },
+          {
+            "x": 4070,
+            "y": 2710
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "biodome",
+          "oxygen"
+        ],
+        "door_id": "biodome--oxygen",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 2930,
+            "y": 2710
+          },
+          {
+            "x": 2990,
+            "y": 2710
+          },
+          {
+            "x": 2990,
+            "y": 3210
+          },
+          {
+            "x": 3010,
+            "y": 3210
+          },
+          {
+            "x": 3010,
+            "y": 3370
+          },
+          {
+            "x": 2930,
+            "y": 3370
+          },
+          {
+            "x": 2930,
+            "y": 3450
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "oxygen",
+          "quarters"
+        ],
+        "door_id": "oxygen--quarters",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 2930,
+            "y": 3450
+          },
+          {
+            "x": 4070,
+            "y": 3450
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "cargo",
+          "data"
+        ],
+        "door_id": "cargo--data",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 4070,
+            "y": 1970
+          },
+          {
+            "x": 5210,
+            "y": 1970
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "cargo",
+          "transit"
+        ],
+        "door_id": "cargo--transit",
+        "compact": true,
+        "waypoints": [
+          {
+            "x": 4070,
+            "y": 1970
+          },
+          {
+            "x": 4130,
+            "y": 1970
+          },
+          {
+            "x": 4130,
+            "y": 2470
+          },
+          {
+            "x": 4150,
+            "y": 2470
+          },
+          {
+            "x": 4150,
+            "y": 2630
+          },
+          {
+            "x": 4070,
+            "y": 2630
+          },
+          {
+            "x": 4070,
+            "y": 2710
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "storage",
+          "data"
+        ],
+        "door_id": "storage--data",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 5210,
+            "y": 1230
+          },
+          {
+            "x": 5270,
+            "y": 1230
+          },
+          {
+            "x": 5270,
+            "y": 1730
+          },
+          {
+            "x": 5290,
+            "y": 1730
+          },
+          {
+            "x": 5290,
+            "y": 1890
+          },
+          {
+            "x": 5210,
+            "y": 1890
+          },
+          {
+            "x": 5210,
+            "y": 1970
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "data",
+          "airlock"
+        ],
+        "door_id": "data--airlock",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 5210,
+            "y": 1970
+          },
+          {
+            "x": 5270,
+            "y": 1970
+          },
+          {
+            "x": 5270,
+            "y": 2470
+          },
+          {
+            "x": 5290,
+            "y": 2470
+          },
+          {
+            "x": 5290,
+            "y": 2630
+          },
+          {
+            "x": 5210,
+            "y": 2630
+          },
+          {
+            "x": 5210,
+            "y": 2710
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "transit",
+          "airlock"
+        ],
+        "door_id": "transit--airlock",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 4070,
+            "y": 2710
+          },
+          {
+            "x": 5210,
+            "y": 2710
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "transit",
+          "quarters"
+        ],
+        "door_id": "transit--quarters",
+        "compact": false,
+        "waypoints": [
+          {
+            "x": 4070,
+            "y": 2710
+          },
+          {
+            "x": 4130,
+            "y": 2710
+          },
+          {
+            "x": 4130,
+            "y": 3210
+          },
+          {
+            "x": 4150,
+            "y": 3210
+          },
+          {
+            "x": 4150,
+            "y": 3370
+          },
+          {
+            "x": 4070,
+            "y": 3370
+          },
+          {
+            "x": 4070,
+            "y": 3450
+          }
+        ],
+        "distance": 900.0
+      },
+      {
+        "rooms": [
+          "nexus",
+          "cargo"
+        ],
+        "door_id": "nexus--cargo",
+        "compact": true,
+        "waypoints": [
+          {
+            "x": 2930,
+            "y": 1970
+          },
+          {
+            "x": 4070,
+            "y": 1970
+          }
+        ],
+        "distance": 1140.0
+      },
+      {
+        "rooms": [
+          "nexus",
+          "biodome"
+        ],
+        "door_id": "nexus--biodome",
+        "compact": true,
+        "waypoints": [
+          {
+            "x": 2930,
+            "y": 1970
+          },
+          {
+            "x": 2990,
+            "y": 1970
+          },
+          {
+            "x": 2990,
+            "y": 2470
+          },
+          {
+            "x": 3010,
+            "y": 2470
+          },
+          {
+            "x": 3010,
+            "y": 2630
+          },
+          {
+            "x": 2930,
+            "y": 2630
+          },
+          {
+            "x": 2930,
+            "y": 2710
+          }
+        ],
+        "distance": 900.0
+      }
     ]
   },
   "occlusion": [

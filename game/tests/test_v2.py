@@ -371,3 +371,85 @@ class AsterionTests(TestCase):
             is_connected=True
         )
         self.assertIn(self.room.code, list(active_room_codes()))
+
+    def test_locked_door_blocks_clock_and_opens_after_absolute_expiry(self):
+        from game.maps import closed_doors
+        from game.physics import blocked
+
+        door = next(
+            d for d in game_map(self.game)["doors"] if d["id"] == "power--security"
+        )
+        self.crew.x, self.crew.y = door["bounds"]["x"] - 25, door["bounds"]["y"] + 90
+        self.crew.save()
+        self.action(self.imp, "sabotage.start", kind="doors", group=door["group"])
+        self.action(self.crew, "player.move", seq=1, direction={"x": 1, "y": 0})
+        tick(self.room.code, now=self.now + timedelta(seconds=0.2))
+        self.crew.refresh_from_db()
+        self.assertLessEqual(self.crew.x, door["bounds"]["x"] - 14)
+        self.now += timedelta(seconds=11)
+        self.action(self.crew, "player.move", seq=2, direction={"x": 1, "y": 0})
+        tick(self.room.code, now=self.now + timedelta(seconds=0.2))
+        self.crew.refresh_from_db()
+        self.assertGreater(self.crew.x, door["bounds"]["x"])
+
+    def test_late_repair_cannot_reverse_a_critical_deadline(self):
+        self.action(self.imp, "sabotage.start", kind="oxygen")
+        sabotage = self.game.sabotages.get(kind="oxygen")
+        panel = next(
+            p for p in game_map(self.game)["sabotage_panels"] if p["type"] == "oxygen"
+        )
+        self.crew.x, self.crew.y = panel["x"], panel["y"]
+        self.crew.save()
+        self.now += timedelta(seconds=91)
+        self.action(
+            self.crew,
+            "sabotage.repair.begin",
+            sabotage_id=str(sabotage.pk),
+            panel_id=panel["id"],
+        )
+        self.game.refresh_from_db()
+        sabotage.refresh_from_db()
+        self.assertEqual(self.game.winner, "impostor")
+        self.assertEqual(sabotage.status, "failed")
+
+    def test_camera_respects_mimic_and_vent_privacy(self):
+        self.game.settings["special_roles"] = True
+        self.game.save()
+        target = (
+            self.game.player_states.filter(role="crew").exclude(pk=self.crew.pk).first()
+        )
+        camera = next(
+            c for c in game_map(self.game)["cameras"] if c["room_id"] == "security"
+        )
+        self.crew.x, self.crew.y = 2930, 1230
+        self.crew.save()
+        self.imp.x, self.imp.y = 2930, 1280
+        self.imp.special_role = "mimic"
+        self.imp.save()
+        target.x, target.y = 650, 2120
+        target.save()
+        self.action(
+            self.imp, "player.ability.use", target_player_id=str(target.player_id)
+        )
+        self.action(
+            self.crew, "terminal.use", terminal_id="security", camera_id=camera["id"]
+        )
+        observation = private_snapshot(self.game, self.crew.player_id)["observation"]
+        self.imp.refresh_from_db()
+        alias = appearance_id(self.game, self.imp)
+        appearance = next(p for p in observation["players"] if p["id"] == alias)
+        self.assertEqual(appearance["nickname"], target.player.nickname)
+        self.assertEqual(appearance["color"], target.color)
+        self.imp.is_in_vent = True
+        self.imp.save()
+        self.assertNotIn(
+            alias,
+            [
+                p["id"]
+                for p in private_snapshot(self.game, self.crew.player_id)[
+                    "observation"
+                ]["players"]
+            ],
+        )
+        with self.assertRaises(RuleError):
+            self.action(self.imp, "terminal.use", terminal_id="security")

@@ -135,3 +135,51 @@ class AsterionRaceTests(TransactionTestCase):
             outcomes = [f.result(timeout=15) for f in futures]
         self.assertEqual(sorted(outcomes), ["COOLDOWN", "ok"])
         self.assertEqual(room.game.sabotages.count(), 1)
+
+    def test_same_task_cannot_complete_twice_in_parallel(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        from game.maps import task_stations
+
+        room, players = make_room()
+        room.settings = {"map_version": 2}
+        room.save()
+        with patch("game.services.start.publish_start"):
+            start_game(code=room.code, player=players[0])
+        game = room.game
+        actor = game.player_states.filter(role="crew").first()
+        task = game.tasks.filter(player_id=actor.player_id).first()
+        task.task_type = "wires"
+        task.stage_total = 1
+        task.challenge = [3, 1, 2, 0]
+        task.started_at = timezone.now() - timedelta(seconds=4)
+        task.save()
+        point = task_stations(game)[task.task_point]
+        actor.x, actor.y = point["x"], point["y"]
+        actor.save()
+        barrier = Barrier(2)
+
+        def complete():
+            close_old_connections()
+            try:
+                barrier.wait(timeout=10)
+                command(
+                    room.code,
+                    actor.player_id,
+                    {
+                        "type": "task.complete",
+                        "task_id": str(task.pk),
+                        "solution": [3, 1, 2, 0],
+                    },
+                )
+                return "ok"
+            except RuleError as e:
+                return e.code
+            finally:
+                connection.close()
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            futures = [pool.submit(complete) for _ in range(2)]
+            outcomes = [f.result(timeout=15) for f in futures]
+        self.assertEqual(sorted(outcomes), ["ALREADY_DONE", "ok"])
+        self.assertEqual(game.tasks.filter(is_completed=True).count(), 1)

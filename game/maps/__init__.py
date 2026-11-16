@@ -7,6 +7,8 @@ from pathlib import Path
 
 @lru_cache(maxsize=2)
 def get_map(version=1):
+    if version not in [1, 2]:
+        raise ValueError("Unsupported map version")
     return json.loads(
         (
             Path(__file__).parent / ("asterion.json" if version == 2 else "v1.json")
@@ -36,7 +38,7 @@ def closed_doors(game, now=None):
     now = now or timezone.now()
     if game.map_version == 1:
         return []
-    ids = {d["door_id"] for d in game.doors.filter(closed_until__gt=now)}
+    ids = set(game.doors.filter(closed_until__gt=now).values_list("door_id", flat=True))
     return [
         d["bounds"]
         for d in game_map(game)["doors"]
