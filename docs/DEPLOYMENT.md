@@ -16,7 +16,7 @@ Requires Python 3.12, PostgreSQL 16, Redis and **two service types**: Daphne HTT
 8. Configure the provided Caddy example with the approved hostname and TLS. Caddy reverse-proxies `/api/` and `/ws/`, including WebSocket upgrade, and overwrites forwarding headers. Set `TRUST_PROXY_HTTPS=true` **only** behind that proxy. Do not expose port 8000 or database/Redis ports publicly.
 9. Verify HTTPS health, a real WSS auth and reconnect, CORS from the frontend domain, and a complete 4-player game through the actual public URLs. Check logs for both API and worker.
 
-The provided Docker/Compose configurations are prepared but were not executed here (no Docker runtime). They need a deployment smoke test on the selected server. Compose pins major service lines; use immutable image digests under your release policy before a production rollout.
+The `container-smoke` CI job builds these Docker images, applies migrations and exercises real HTTP/WebSocket movement through separate API and clock containers with PostgreSQL/Redis. Inspect that job on the final commit before deployment. The selected production server still needs its own smoke test, including TLS, proxy headers and domain configuration. Compose pins major service lines; use immutable image digests under your release policy before a production rollout.
 
 ## Frontend / Vercel
 

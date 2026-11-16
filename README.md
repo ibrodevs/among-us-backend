@@ -37,3 +37,5 @@ Read the API contract in the frontend repository `docs/API-CONTRACT.md` and the 
 
 ## Full game runtime
 Install `requirements.lock.txt` for reproducible versions. Apply migrations, then run Daphne **and** `python manage.py run_game_worker` with the same PostgreSQL DATABASE_URL and Redis REDIS_URL. Without the clock there is no authoritative movement or automatic phase advancement. See [protocol](docs/WS-EVENTS.md), [deployment/rollback](docs/DEPLOYMENT.md), and verification reports in `docs/verification/`. Production requires PostgreSQL, Redis, an explicit strong key and exact CORS/WS origins.
+
+The optional `scripts/smoke_stack.py` checks a disposable running stack using real HTTP and WebSocket messages (`pip install 'websockets>=15,<17'`). CI runs it against the actual Docker/Compose images in the `container-smoke` job and cleans up its test memberships.
