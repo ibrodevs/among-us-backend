@@ -330,3 +330,64 @@ class GameplayRaceTests(TransactionTestCase):
             results = list(pool.map(kill, [0, 1]))
         self.assertEqual(sorted(results), ["FORBIDDEN", "ok"])
         self.assertEqual(Corpse.objects.count(), 1)
+
+    def race_actions(self, room, player, payload, now):
+        barrier = Barrier(2)
+
+        def action(_):
+            close_old_connections()
+            try:
+                barrier.wait(timeout=5)
+                command(room.code, player.pk, payload, now)
+                return "ok"
+            except RuleError as error:
+                return error.code
+            finally:
+                connection.close()
+
+        with ThreadPoolExecutor(2) as pool:
+            return sorted(pool.map(action, range(2)))
+
+    def test_duplicate_concurrent_vote_is_counted_once(self):
+        room, players = make_room()
+        start_game(code=room.code, player=players[0])
+        game = GameSession.objects.get(room=room)
+        game.player_states.update(x=800, y=450)
+        now = timezone.now()
+        command(room.code, players[1].pk, {"type": "meeting.call"}, now)
+        results = self.race_actions(
+            room,
+            players[1],
+            {"type": "vote.cast", "target_player_id": None},
+            now + timedelta(seconds=31),
+        )
+        self.assertEqual(results, ["ALREADY_DONE", "ok"])
+        self.assertEqual(Vote.objects.count(), 1)
+
+    def test_duplicate_concurrent_task_completion_is_counted_once(self):
+        room, players = make_room()
+        with patch(
+            "game.services.start.assign_roles",
+            return_value={
+                p.pk: "impostor" if i == 0 else "crew" for i, p in enumerate(players)
+            },
+        ):
+            start_game(code=room.code, player=players[0])
+        game = GameSession.objects.get(room=room)
+        game.player_states.filter(player=players[1]).update(x=1067, y=294)
+        task = game.tasks.get(player=players[1], task_type="upload")
+        now = timezone.now()
+        command(
+            room.code,
+            players[1].pk,
+            {"type": "task.begin", "task_id": str(task.pk)},
+            now,
+        )
+        results = self.race_actions(
+            room,
+            players[1],
+            {"type": "task.complete", "task_id": str(task.pk), "solution": []},
+            now + timedelta(seconds=9),
+        )
+        self.assertEqual(results, ["ALREADY_DONE", "ok"])
+        self.assertEqual(game.tasks.filter(is_completed=True).count(), 1)
