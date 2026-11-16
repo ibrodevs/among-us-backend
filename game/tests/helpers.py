@@ -7,8 +7,10 @@ MEMORY_CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannel
 
 def make_room(count=4, code="ABC234"):
     players = [Player.objects.create(nickname=f"Player{i}") for i in range(count)]
-    room = Room.objects.create(code=code, host=players[0])
-    RoomMembership.objects.bulk_create([RoomMembership(room=room, player=player) for player in players])
+    room = Room.objects.create(settings={"map_version": 1}, code=code, host=players[0])
+    RoomMembership.objects.bulk_create(
+        [RoomMembership(room=room, player=player) for player in players]
+    )
     return room, players
 
 

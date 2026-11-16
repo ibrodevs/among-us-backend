@@ -60,7 +60,7 @@ async def check(base):
             + f"/ws/rooms/{code}/"
         )
         async with connect(ws_url, origin="http://localhost:3000") as socket:
-            await socket.send(json.dumps({"type": "auth", "token": guests[0]["token"]}))
+            await socket.send(json.dumps({"type": "auth", "token": guests[0]["token"], "protocol_version":2}))
             await receive_type(socket, "auth.ok")
             snapshot = await receive_type(socket, "game.snapshot")
             assert "role" not in json.dumps(snapshot)

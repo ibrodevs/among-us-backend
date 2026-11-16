@@ -1,0 +1,4712 @@
+{
+  "map_id": "asterion",
+  "version": 2,
+  "map_version": 2,
+  "width": 6144,
+  "height": 4096,
+  "player_hitbox": 28,
+  "speed": 220,
+  "rooms": [
+    {
+      "id": "reactor",
+      "name": "Реактор",
+      "sector": "engineering",
+      "col": 0,
+      "row": 1,
+      "compact": false,
+      "bounds": {
+        "x": 200,
+        "y": 970,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "power",
+      "name": "Электростанция",
+      "sector": "engineering",
+      "col": 1,
+      "row": 1,
+      "compact": true,
+      "bounds": {
+        "x": 1340,
+        "y": 970,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "engines",
+      "name": "Двигатели",
+      "sector": "engineering",
+      "col": 0,
+      "row": 2,
+      "compact": false,
+      "bounds": {
+        "x": 200,
+        "y": 1710,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "cooling",
+      "name": "Охлаждение",
+      "sector": "engineering",
+      "col": 1,
+      "row": 2,
+      "compact": true,
+      "bounds": {
+        "x": 1340,
+        "y": 1710,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "maintenance",
+      "name": "Мастерская",
+      "sector": "engineering",
+      "col": 0,
+      "row": 3,
+      "compact": false,
+      "bounds": {
+        "x": 200,
+        "y": 2450,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "bridge",
+      "name": "Мостик",
+      "sector": "command",
+      "col": 1,
+      "row": 0,
+      "compact": false,
+      "bounds": {
+        "x": 1340,
+        "y": 230,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "navigation",
+      "name": "Навигация",
+      "sector": "command",
+      "col": 2,
+      "row": 0,
+      "compact": false,
+      "bounds": {
+        "x": 2480,
+        "y": 230,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "comms",
+      "name": "Связь",
+      "sector": "command",
+      "col": 3,
+      "row": 0,
+      "compact": false,
+      "bounds": {
+        "x": 3620,
+        "y": 230,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "security",
+      "name": "Безопасность",
+      "sector": "command",
+      "col": 2,
+      "row": 1,
+      "compact": true,
+      "bounds": {
+        "x": 2480,
+        "y": 970,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "observatory",
+      "name": "Обсерватория",
+      "sector": "command",
+      "col": 3,
+      "row": 1,
+      "compact": true,
+      "bounds": {
+        "x": 3620,
+        "y": 970,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "medical",
+      "name": "Медблок",
+      "sector": "science",
+      "col": 1,
+      "row": 3,
+      "compact": true,
+      "bounds": {
+        "x": 1340,
+        "y": 2450,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "laboratory",
+      "name": "Лаборатория",
+      "sector": "science",
+      "col": 1,
+      "row": 4,
+      "compact": false,
+      "bounds": {
+        "x": 1340,
+        "y": 3190,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "biodome",
+      "name": "Биокупол",
+      "sector": "science",
+      "col": 2,
+      "row": 3,
+      "compact": true,
+      "bounds": {
+        "x": 2480,
+        "y": 2450,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "oxygen",
+      "name": "Кислородная",
+      "sector": "science",
+      "col": 2,
+      "row": 4,
+      "compact": false,
+      "bounds": {
+        "x": 2480,
+        "y": 3190,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "quarters",
+      "name": "Жилой блок",
+      "sector": "science",
+      "col": 3,
+      "row": 4,
+      "compact": false,
+      "bounds": {
+        "x": 3620,
+        "y": 3190,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "cargo",
+      "name": "Грузовой отсек",
+      "sector": "logistics",
+      "col": 3,
+      "row": 2,
+      "compact": true,
+      "bounds": {
+        "x": 3620,
+        "y": 1710,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "storage",
+      "name": "Склад",
+      "sector": "logistics",
+      "col": 4,
+      "row": 1,
+      "compact": false,
+      "bounds": {
+        "x": 4760,
+        "y": 970,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "data",
+      "name": "Центр данных",
+      "sector": "logistics",
+      "col": 4,
+      "row": 2,
+      "compact": false,
+      "bounds": {
+        "x": 4760,
+        "y": 1710,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "transit",
+      "name": "Транспортный узел",
+      "sector": "logistics",
+      "col": 3,
+      "row": 3,
+      "compact": true,
+      "bounds": {
+        "x": 3620,
+        "y": 2450,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "airlock",
+      "name": "Космический шлюз",
+      "sector": "logistics",
+      "col": 4,
+      "row": 3,
+      "compact": false,
+      "bounds": {
+        "x": 4760,
+        "y": 2450,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "nexus",
+      "name": "Nexus Hall",
+      "sector": "nexus",
+      "col": 2,
+      "row": 2,
+      "compact": true,
+      "bounds": {
+        "x": 2480,
+        "y": 1710,
+        "width": 900,
+        "height": 520
+      }
+    }
+  ],
+  "zones": [
+    {
+      "id": "reactor",
+      "name": "Реактор",
+      "sector": "engineering",
+      "col": 0,
+      "row": 1,
+      "compact": false,
+      "bounds": {
+        "x": 200,
+        "y": 970,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "power",
+      "name": "Электростанция",
+      "sector": "engineering",
+      "col": 1,
+      "row": 1,
+      "compact": true,
+      "bounds": {
+        "x": 1340,
+        "y": 970,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "engines",
+      "name": "Двигатели",
+      "sector": "engineering",
+      "col": 0,
+      "row": 2,
+      "compact": false,
+      "bounds": {
+        "x": 200,
+        "y": 1710,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "cooling",
+      "name": "Охлаждение",
+      "sector": "engineering",
+      "col": 1,
+      "row": 2,
+      "compact": true,
+      "bounds": {
+        "x": 1340,
+        "y": 1710,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "maintenance",
+      "name": "Мастерская",
+      "sector": "engineering",
+      "col": 0,
+      "row": 3,
+      "compact": false,
+      "bounds": {
+        "x": 200,
+        "y": 2450,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "bridge",
+      "name": "Мостик",
+      "sector": "command",
+      "col": 1,
+      "row": 0,
+      "compact": false,
+      "bounds": {
+        "x": 1340,
+        "y": 230,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "navigation",
+      "name": "Навигация",
+      "sector": "command",
+      "col": 2,
+      "row": 0,
+      "compact": false,
+      "bounds": {
+        "x": 2480,
+        "y": 230,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "comms",
+      "name": "Связь",
+      "sector": "command",
+      "col": 3,
+      "row": 0,
+      "compact": false,
+      "bounds": {
+        "x": 3620,
+        "y": 230,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "security",
+      "name": "Безопасность",
+      "sector": "command",
+      "col": 2,
+      "row": 1,
+      "compact": true,
+      "bounds": {
+        "x": 2480,
+        "y": 970,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "observatory",
+      "name": "Обсерватория",
+      "sector": "command",
+      "col": 3,
+      "row": 1,
+      "compact": true,
+      "bounds": {
+        "x": 3620,
+        "y": 970,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "medical",
+      "name": "Медблок",
+      "sector": "science",
+      "col": 1,
+      "row": 3,
+      "compact": true,
+      "bounds": {
+        "x": 1340,
+        "y": 2450,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "laboratory",
+      "name": "Лаборатория",
+      "sector": "science",
+      "col": 1,
+      "row": 4,
+      "compact": false,
+      "bounds": {
+        "x": 1340,
+        "y": 3190,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "biodome",
+      "name": "Биокупол",
+      "sector": "science",
+      "col": 2,
+      "row": 3,
+      "compact": true,
+      "bounds": {
+        "x": 2480,
+        "y": 2450,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "oxygen",
+      "name": "Кислородная",
+      "sector": "science",
+      "col": 2,
+      "row": 4,
+      "compact": false,
+      "bounds": {
+        "x": 2480,
+        "y": 3190,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "quarters",
+      "name": "Жилой блок",
+      "sector": "science",
+      "col": 3,
+      "row": 4,
+      "compact": false,
+      "bounds": {
+        "x": 3620,
+        "y": 3190,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "cargo",
+      "name": "Грузовой отсек",
+      "sector": "logistics",
+      "col": 3,
+      "row": 2,
+      "compact": true,
+      "bounds": {
+        "x": 3620,
+        "y": 1710,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "storage",
+      "name": "Склад",
+      "sector": "logistics",
+      "col": 4,
+      "row": 1,
+      "compact": false,
+      "bounds": {
+        "x": 4760,
+        "y": 970,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "data",
+      "name": "Центр данных",
+      "sector": "logistics",
+      "col": 4,
+      "row": 2,
+      "compact": false,
+      "bounds": {
+        "x": 4760,
+        "y": 1710,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "transit",
+      "name": "Транспортный узел",
+      "sector": "logistics",
+      "col": 3,
+      "row": 3,
+      "compact": true,
+      "bounds": {
+        "x": 3620,
+        "y": 2450,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "airlock",
+      "name": "Космический шлюз",
+      "sector": "logistics",
+      "col": 4,
+      "row": 3,
+      "compact": false,
+      "bounds": {
+        "x": 4760,
+        "y": 2450,
+        "width": 900,
+        "height": 520
+      }
+    },
+    {
+      "id": "nexus",
+      "name": "Nexus Hall",
+      "sector": "nexus",
+      "col": 2,
+      "row": 2,
+      "compact": true,
+      "bounds": {
+        "x": 2480,
+        "y": 1710,
+        "width": 900,
+        "height": 520
+      }
+    }
+  ],
+  "corridors": [
+    {
+      "id": "reactor--power",
+      "bounds": {
+        "x": 1080,
+        "y": 1140,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "reactor",
+        "power"
+      ]
+    },
+    {
+      "id": "reactor--engines",
+      "bounds": {
+        "x": 560,
+        "y": 1470,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "reactor",
+        "engines"
+      ]
+    },
+    {
+      "id": "power--security",
+      "bounds": {
+        "x": 2220,
+        "y": 1140,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "power",
+        "security"
+      ]
+    },
+    {
+      "id": "power--cooling",
+      "bounds": {
+        "x": 1700,
+        "y": 1470,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "power",
+        "cooling"
+      ]
+    },
+    {
+      "id": "engines--cooling",
+      "bounds": {
+        "x": 1080,
+        "y": 1880,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "engines",
+        "cooling"
+      ]
+    },
+    {
+      "id": "engines--maintenance",
+      "bounds": {
+        "x": 560,
+        "y": 2210,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "engines",
+        "maintenance"
+      ]
+    },
+    {
+      "id": "cooling--nexus",
+      "bounds": {
+        "x": 2220,
+        "y": 1880,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "cooling",
+        "nexus"
+      ]
+    },
+    {
+      "id": "cooling--medical",
+      "bounds": {
+        "x": 1700,
+        "y": 2210,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "cooling",
+        "medical"
+      ]
+    },
+    {
+      "id": "maintenance--medical",
+      "bounds": {
+        "x": 1080,
+        "y": 2620,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "maintenance",
+        "medical"
+      ]
+    },
+    {
+      "id": "bridge--navigation",
+      "bounds": {
+        "x": 2220,
+        "y": 400,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "bridge",
+        "navigation"
+      ]
+    },
+    {
+      "id": "bridge--power",
+      "bounds": {
+        "x": 1700,
+        "y": 730,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "bridge",
+        "power"
+      ]
+    },
+    {
+      "id": "navigation--comms",
+      "bounds": {
+        "x": 3360,
+        "y": 400,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "navigation",
+        "comms"
+      ]
+    },
+    {
+      "id": "navigation--security",
+      "bounds": {
+        "x": 2840,
+        "y": 730,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "navigation",
+        "security"
+      ]
+    },
+    {
+      "id": "comms--observatory",
+      "bounds": {
+        "x": 3980,
+        "y": 730,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "comms",
+        "observatory"
+      ]
+    },
+    {
+      "id": "security--observatory",
+      "bounds": {
+        "x": 3360,
+        "y": 1140,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "security",
+        "observatory"
+      ]
+    },
+    {
+      "id": "security--nexus",
+      "bounds": {
+        "x": 2840,
+        "y": 1470,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "security",
+        "nexus"
+      ]
+    },
+    {
+      "id": "observatory--storage",
+      "bounds": {
+        "x": 4500,
+        "y": 1140,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "observatory",
+        "storage"
+      ]
+    },
+    {
+      "id": "observatory--cargo",
+      "bounds": {
+        "x": 3980,
+        "y": 1470,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "observatory",
+        "cargo"
+      ]
+    },
+    {
+      "id": "medical--biodome",
+      "bounds": {
+        "x": 2220,
+        "y": 2620,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "medical",
+        "biodome"
+      ]
+    },
+    {
+      "id": "medical--laboratory",
+      "bounds": {
+        "x": 1700,
+        "y": 2950,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "medical",
+        "laboratory"
+      ]
+    },
+    {
+      "id": "laboratory--oxygen",
+      "bounds": {
+        "x": 2220,
+        "y": 3360,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "laboratory",
+        "oxygen"
+      ]
+    },
+    {
+      "id": "biodome--transit",
+      "bounds": {
+        "x": 3360,
+        "y": 2620,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "biodome",
+        "transit"
+      ]
+    },
+    {
+      "id": "biodome--oxygen",
+      "bounds": {
+        "x": 2840,
+        "y": 2950,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "biodome",
+        "oxygen"
+      ]
+    },
+    {
+      "id": "oxygen--quarters",
+      "bounds": {
+        "x": 3360,
+        "y": 3360,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "oxygen",
+        "quarters"
+      ]
+    },
+    {
+      "id": "cargo--data",
+      "bounds": {
+        "x": 4500,
+        "y": 1880,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "cargo",
+        "data"
+      ]
+    },
+    {
+      "id": "cargo--transit",
+      "bounds": {
+        "x": 3980,
+        "y": 2210,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "cargo",
+        "transit"
+      ]
+    },
+    {
+      "id": "storage--data",
+      "bounds": {
+        "x": 5120,
+        "y": 1470,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "storage",
+        "data"
+      ]
+    },
+    {
+      "id": "data--airlock",
+      "bounds": {
+        "x": 5120,
+        "y": 2210,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "data",
+        "airlock"
+      ]
+    },
+    {
+      "id": "transit--airlock",
+      "bounds": {
+        "x": 4500,
+        "y": 2620,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "transit",
+        "airlock"
+      ]
+    },
+    {
+      "id": "transit--quarters",
+      "bounds": {
+        "x": 3980,
+        "y": 2950,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "transit",
+        "quarters"
+      ]
+    },
+    {
+      "id": "nexus--cargo",
+      "bounds": {
+        "x": 3360,
+        "y": 1880,
+        "width": 280,
+        "height": 180
+      },
+      "rooms": [
+        "nexus",
+        "cargo"
+      ]
+    },
+    {
+      "id": "nexus--biodome",
+      "bounds": {
+        "x": 2840,
+        "y": 2210,
+        "width": 180,
+        "height": 260
+      },
+      "rooms": [
+        "nexus",
+        "biodome"
+      ]
+    }
+  ],
+  "walls": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 6144,
+      "height": 230
+    },
+    {
+      "x": 0,
+      "y": 230,
+      "width": 1340,
+      "height": 520
+    },
+    {
+      "x": 2240,
+      "y": 230,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 230,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 230,
+      "width": 1624,
+      "height": 520
+    },
+    {
+      "x": 2240,
+      "y": 580,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 580,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 0,
+      "y": 750,
+      "width": 1700,
+      "height": 220
+    },
+    {
+      "x": 1880,
+      "y": 750,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 3020,
+      "y": 750,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 4160,
+      "y": 750,
+      "width": 1984,
+      "height": 220
+    },
+    {
+      "x": 0,
+      "y": 970,
+      "width": 200,
+      "height": 520
+    },
+    {
+      "x": 1100,
+      "y": 970,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 2240,
+      "y": 970,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 970,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 970,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 5660,
+      "y": 970,
+      "width": 484,
+      "height": 520
+    },
+    {
+      "x": 1100,
+      "y": 1320,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 2240,
+      "y": 1320,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 1320,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 1320,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 0,
+      "y": 1490,
+      "width": 560,
+      "height": 220
+    },
+    {
+      "x": 740,
+      "y": 1490,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 1880,
+      "y": 1490,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 3020,
+      "y": 1490,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 4160,
+      "y": 1490,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 5300,
+      "y": 1490,
+      "width": 844,
+      "height": 220
+    },
+    {
+      "x": 0,
+      "y": 1710,
+      "width": 200,
+      "height": 520
+    },
+    {
+      "x": 1100,
+      "y": 1710,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 2240,
+      "y": 1710,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 1710,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 1710,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 5660,
+      "y": 1710,
+      "width": 484,
+      "height": 520
+    },
+    {
+      "x": 1100,
+      "y": 2060,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 2240,
+      "y": 2060,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 2060,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 2060,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 0,
+      "y": 2230,
+      "width": 560,
+      "height": 220
+    },
+    {
+      "x": 740,
+      "y": 2230,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 1880,
+      "y": 2230,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 3020,
+      "y": 2230,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 4160,
+      "y": 2230,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 5300,
+      "y": 2230,
+      "width": 844,
+      "height": 220
+    },
+    {
+      "x": 0,
+      "y": 2450,
+      "width": 200,
+      "height": 520
+    },
+    {
+      "x": 1100,
+      "y": 2450,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 2240,
+      "y": 2450,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 2450,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 2450,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 5660,
+      "y": 2450,
+      "width": 484,
+      "height": 520
+    },
+    {
+      "x": 1100,
+      "y": 2800,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 2240,
+      "y": 2800,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 2800,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 2800,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 0,
+      "y": 2970,
+      "width": 1700,
+      "height": 220
+    },
+    {
+      "x": 1880,
+      "y": 2970,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 3020,
+      "y": 2970,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 4160,
+      "y": 2970,
+      "width": 1984,
+      "height": 220
+    },
+    {
+      "x": 0,
+      "y": 3190,
+      "width": 1340,
+      "height": 520
+    },
+    {
+      "x": 2240,
+      "y": 3190,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 3190,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 3190,
+      "width": 1624,
+      "height": 520
+    },
+    {
+      "x": 2240,
+      "y": 3540,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 3540,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 0,
+      "y": 3710,
+      "width": 6144,
+      "height": 386
+    },
+    {
+      "x": 340,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 580,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 820,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1480,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1720,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1960,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 340,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 580,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 820,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1480,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1720,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1960,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 340,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 580,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 820,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1480,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1720,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1960,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2620,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2860,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3100,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3760,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4000,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4240,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2620,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2860,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3100,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3760,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4000,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4240,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1480,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1720,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1960,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1480,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1720,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1960,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2620,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2860,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3100,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2620,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2860,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3100,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3760,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4000,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4240,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3760,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4000,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4240,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4900,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 5140,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 5380,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4900,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 5140,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 5380,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3760,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4000,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4240,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4900,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 5140,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 5380,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    }
+  ],
+  "doors": [
+    {
+      "id": "reactor--power",
+      "group": "engineering",
+      "bounds": {
+        "x": 1208,
+        "y": 1140,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "reactor",
+        "power"
+      ],
+      "compact": false
+    },
+    {
+      "id": "reactor--engines",
+      "group": "engineering",
+      "bounds": {
+        "x": 560,
+        "y": 1588,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "reactor",
+        "engines"
+      ],
+      "compact": false
+    },
+    {
+      "id": "power--security",
+      "group": "engineering",
+      "bounds": {
+        "x": 2348,
+        "y": 1140,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "power",
+        "security"
+      ],
+      "compact": true
+    },
+    {
+      "id": "power--cooling",
+      "group": "engineering",
+      "bounds": {
+        "x": 1700,
+        "y": 1588,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "power",
+        "cooling"
+      ],
+      "compact": true
+    },
+    {
+      "id": "engines--cooling",
+      "group": "engineering",
+      "bounds": {
+        "x": 1208,
+        "y": 1880,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "engines",
+        "cooling"
+      ],
+      "compact": false
+    },
+    {
+      "id": "engines--maintenance",
+      "group": "engineering",
+      "bounds": {
+        "x": 560,
+        "y": 2328,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "engines",
+        "maintenance"
+      ],
+      "compact": false
+    },
+    {
+      "id": "cooling--nexus",
+      "group": "engineering",
+      "bounds": {
+        "x": 2348,
+        "y": 1880,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "cooling",
+        "nexus"
+      ],
+      "compact": true
+    },
+    {
+      "id": "cooling--medical",
+      "group": "engineering",
+      "bounds": {
+        "x": 1700,
+        "y": 2328,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "cooling",
+        "medical"
+      ],
+      "compact": true
+    },
+    {
+      "id": "maintenance--medical",
+      "group": "engineering",
+      "bounds": {
+        "x": 1208,
+        "y": 2620,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "maintenance",
+        "medical"
+      ],
+      "compact": false
+    },
+    {
+      "id": "bridge--navigation",
+      "group": "command",
+      "bounds": {
+        "x": 2348,
+        "y": 400,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "bridge",
+        "navigation"
+      ],
+      "compact": false
+    },
+    {
+      "id": "bridge--power",
+      "group": "command",
+      "bounds": {
+        "x": 1700,
+        "y": 848,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "bridge",
+        "power"
+      ],
+      "compact": false
+    },
+    {
+      "id": "navigation--comms",
+      "group": "command",
+      "bounds": {
+        "x": 3488,
+        "y": 400,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "navigation",
+        "comms"
+      ],
+      "compact": false
+    },
+    {
+      "id": "navigation--security",
+      "group": "command",
+      "bounds": {
+        "x": 2840,
+        "y": 848,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "navigation",
+        "security"
+      ],
+      "compact": false
+    },
+    {
+      "id": "comms--observatory",
+      "group": "command",
+      "bounds": {
+        "x": 3980,
+        "y": 848,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "comms",
+        "observatory"
+      ],
+      "compact": false
+    },
+    {
+      "id": "security--observatory",
+      "group": "command",
+      "bounds": {
+        "x": 3488,
+        "y": 1140,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "security",
+        "observatory"
+      ],
+      "compact": true
+    },
+    {
+      "id": "security--nexus",
+      "group": "command",
+      "bounds": {
+        "x": 2840,
+        "y": 1588,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "security",
+        "nexus"
+      ],
+      "compact": true
+    },
+    {
+      "id": "observatory--storage",
+      "group": "command",
+      "bounds": {
+        "x": 4628,
+        "y": 1140,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "observatory",
+        "storage"
+      ],
+      "compact": false
+    },
+    {
+      "id": "observatory--cargo",
+      "group": "command",
+      "bounds": {
+        "x": 3980,
+        "y": 1588,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "observatory",
+        "cargo"
+      ],
+      "compact": true
+    },
+    {
+      "id": "medical--biodome",
+      "group": "science",
+      "bounds": {
+        "x": 2348,
+        "y": 2620,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "medical",
+        "biodome"
+      ],
+      "compact": true
+    },
+    {
+      "id": "medical--laboratory",
+      "group": "science",
+      "bounds": {
+        "x": 1700,
+        "y": 3068,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "medical",
+        "laboratory"
+      ],
+      "compact": false
+    },
+    {
+      "id": "laboratory--oxygen",
+      "group": "science",
+      "bounds": {
+        "x": 2348,
+        "y": 3360,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "laboratory",
+        "oxygen"
+      ],
+      "compact": false
+    },
+    {
+      "id": "biodome--transit",
+      "group": "science",
+      "bounds": {
+        "x": 3488,
+        "y": 2620,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "biodome",
+        "transit"
+      ],
+      "compact": true
+    },
+    {
+      "id": "biodome--oxygen",
+      "group": "science",
+      "bounds": {
+        "x": 2840,
+        "y": 3068,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "biodome",
+        "oxygen"
+      ],
+      "compact": false
+    },
+    {
+      "id": "oxygen--quarters",
+      "group": "science",
+      "bounds": {
+        "x": 3488,
+        "y": 3360,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "oxygen",
+        "quarters"
+      ],
+      "compact": false
+    },
+    {
+      "id": "cargo--data",
+      "group": "logistics",
+      "bounds": {
+        "x": 4628,
+        "y": 1880,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "cargo",
+        "data"
+      ],
+      "compact": false
+    },
+    {
+      "id": "cargo--transit",
+      "group": "logistics",
+      "bounds": {
+        "x": 3980,
+        "y": 2328,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "cargo",
+        "transit"
+      ],
+      "compact": true
+    },
+    {
+      "id": "storage--data",
+      "group": "logistics",
+      "bounds": {
+        "x": 5120,
+        "y": 1588,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "storage",
+        "data"
+      ],
+      "compact": false
+    },
+    {
+      "id": "data--airlock",
+      "group": "logistics",
+      "bounds": {
+        "x": 5120,
+        "y": 2328,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "data",
+        "airlock"
+      ],
+      "compact": false
+    },
+    {
+      "id": "transit--airlock",
+      "group": "logistics",
+      "bounds": {
+        "x": 4628,
+        "y": 2620,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "transit",
+        "airlock"
+      ],
+      "compact": false
+    },
+    {
+      "id": "transit--quarters",
+      "group": "logistics",
+      "bounds": {
+        "x": 3980,
+        "y": 3068,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "transit",
+        "quarters"
+      ],
+      "compact": false
+    },
+    {
+      "id": "nexus--cargo",
+      "group": "nexus",
+      "bounds": {
+        "x": 3488,
+        "y": 1880,
+        "width": 24,
+        "height": 180
+      },
+      "rooms": [
+        "nexus",
+        "cargo"
+      ],
+      "compact": true
+    },
+    {
+      "id": "nexus--biodome",
+      "group": "nexus",
+      "bounds": {
+        "x": 2840,
+        "y": 2328,
+        "width": 180,
+        "height": 24
+      },
+      "rooms": [
+        "nexus",
+        "biodome"
+      ],
+      "compact": true
+    }
+  ],
+  "spawns": [
+    {
+      "x": 2780,
+      "y": 1970
+    },
+    {
+      "x": 2814,
+      "y": 1970
+    },
+    {
+      "x": 2848,
+      "y": 1970
+    },
+    {
+      "x": 2882,
+      "y": 1970
+    },
+    {
+      "x": 2916,
+      "y": 1970
+    },
+    {
+      "x": 2950,
+      "y": 1970
+    },
+    {
+      "x": 2984,
+      "y": 1970
+    },
+    {
+      "x": 3018,
+      "y": 1970
+    },
+    {
+      "x": 3052,
+      "y": 1970
+    },
+    {
+      "x": 3086,
+      "y": 1970
+    }
+  ],
+  "emergency": {
+    "x": 2930,
+    "y": 1970
+  },
+  "emergency_stations": [
+    {
+      "id": "nexus-emergency",
+      "x": 2930,
+      "y": 1970
+    }
+  ],
+  "tasks": [
+    {
+      "point": "reactor-0",
+      "type": "shield_alignment",
+      "room_id": "reactor",
+      "x": 410,
+      "y": 1290,
+      "seconds": 3
+    },
+    {
+      "point": "reactor-1",
+      "type": "shield_alignment",
+      "room_id": "reactor",
+      "x": 890,
+      "y": 1290,
+      "seconds": 3
+    },
+    {
+      "point": "power-0",
+      "type": "power_routing",
+      "room_id": "power",
+      "x": 1550,
+      "y": 1290,
+      "seconds": 3
+    },
+    {
+      "point": "power-1",
+      "type": "wires",
+      "room_id": "power",
+      "x": 2030,
+      "y": 1290,
+      "seconds": 3
+    },
+    {
+      "point": "engines-0",
+      "type": "engine_calibration",
+      "room_id": "engines",
+      "x": 410,
+      "y": 2030,
+      "seconds": 3
+    },
+    {
+      "point": "engines-1",
+      "type": "engine_calibration",
+      "room_id": "engines",
+      "x": 890,
+      "y": 2030,
+      "seconds": 3
+    },
+    {
+      "point": "cooling-0",
+      "type": "coolant_valves",
+      "room_id": "cooling",
+      "x": 1550,
+      "y": 2030,
+      "seconds": 3
+    },
+    {
+      "point": "cooling-1",
+      "type": "coolant_valves",
+      "room_id": "cooling",
+      "x": 2030,
+      "y": 2030,
+      "seconds": 3
+    },
+    {
+      "point": "maintenance-0",
+      "type": "wires",
+      "room_id": "maintenance",
+      "x": 410,
+      "y": 2770,
+      "seconds": 3
+    },
+    {
+      "point": "maintenance-1",
+      "type": "wires",
+      "room_id": "maintenance",
+      "x": 890,
+      "y": 2770,
+      "seconds": 3
+    },
+    {
+      "point": "bridge-0",
+      "type": "access_terminal",
+      "room_id": "bridge",
+      "x": 1550,
+      "y": 550,
+      "seconds": 3
+    },
+    {
+      "point": "bridge-1",
+      "type": "access_terminal",
+      "room_id": "bridge",
+      "x": 2030,
+      "y": 550,
+      "seconds": 3
+    },
+    {
+      "point": "navigation-0",
+      "type": "navigation_route",
+      "room_id": "navigation",
+      "x": 2690,
+      "y": 550,
+      "seconds": 3
+    },
+    {
+      "point": "navigation-1",
+      "type": "navigation_route",
+      "room_id": "navigation",
+      "x": 3170,
+      "y": 550,
+      "seconds": 3
+    },
+    {
+      "point": "comms-0",
+      "type": "signal_frequency",
+      "room_id": "comms",
+      "x": 3830,
+      "y": 550,
+      "seconds": 3
+    },
+    {
+      "point": "comms-1",
+      "type": "signal_frequency",
+      "room_id": "comms",
+      "x": 4310,
+      "y": 550,
+      "seconds": 3
+    },
+    {
+      "point": "security-0",
+      "type": "sequence",
+      "room_id": "security",
+      "x": 2690,
+      "y": 1290,
+      "seconds": 3
+    },
+    {
+      "point": "security-1",
+      "type": "wires",
+      "room_id": "security",
+      "x": 3170,
+      "y": 1290,
+      "seconds": 3
+    },
+    {
+      "point": "observatory-0",
+      "type": "antenna_alignment",
+      "room_id": "observatory",
+      "x": 3830,
+      "y": 1290,
+      "seconds": 3
+    },
+    {
+      "point": "observatory-1",
+      "type": "antenna_alignment",
+      "room_id": "observatory",
+      "x": 4310,
+      "y": 1290,
+      "seconds": 3
+    },
+    {
+      "point": "medical-0",
+      "type": "medical_scan",
+      "room_id": "medical",
+      "x": 1550,
+      "y": 2770,
+      "seconds": 8
+    },
+    {
+      "point": "medical-1",
+      "type": "medical_scan",
+      "room_id": "medical",
+      "x": 2030,
+      "y": 2770,
+      "seconds": 8
+    },
+    {
+      "point": "laboratory-0",
+      "type": "sample_analysis",
+      "room_id": "laboratory",
+      "x": 1550,
+      "y": 3510,
+      "seconds": 8
+    },
+    {
+      "point": "laboratory-1",
+      "type": "sample_analysis",
+      "room_id": "laboratory",
+      "x": 2030,
+      "y": 3510,
+      "seconds": 8
+    },
+    {
+      "point": "biodome-0",
+      "type": "oxygen_filters",
+      "room_id": "biodome",
+      "x": 2690,
+      "y": 2770,
+      "seconds": 3
+    },
+    {
+      "point": "biodome-1",
+      "type": "oxygen_filters",
+      "room_id": "biodome",
+      "x": 3170,
+      "y": 2770,
+      "seconds": 3
+    },
+    {
+      "point": "oxygen-0",
+      "type": "pressure_control",
+      "room_id": "oxygen",
+      "x": 2690,
+      "y": 3510,
+      "seconds": 3
+    },
+    {
+      "point": "oxygen-1",
+      "type": "pressure_control",
+      "room_id": "oxygen",
+      "x": 3170,
+      "y": 3510,
+      "seconds": 3
+    },
+    {
+      "point": "quarters-0",
+      "type": "debris_removal",
+      "room_id": "quarters",
+      "x": 3830,
+      "y": 3510,
+      "seconds": 3
+    },
+    {
+      "point": "quarters-1",
+      "type": "debris_removal",
+      "room_id": "quarters",
+      "x": 4310,
+      "y": 3510,
+      "seconds": 3
+    },
+    {
+      "point": "cargo-0",
+      "type": "cargo_sorting",
+      "room_id": "cargo",
+      "x": 3830,
+      "y": 2030,
+      "seconds": 3
+    },
+    {
+      "point": "cargo-1",
+      "type": "cargo_sorting",
+      "room_id": "cargo",
+      "x": 4310,
+      "y": 2030,
+      "seconds": 3
+    },
+    {
+      "point": "storage-0",
+      "type": "fuel_distribution",
+      "room_id": "storage",
+      "x": 4970,
+      "y": 1290,
+      "seconds": 3
+    },
+    {
+      "point": "storage-1",
+      "type": "fuel_distribution",
+      "room_id": "storage",
+      "x": 5450,
+      "y": 1290,
+      "seconds": 3
+    },
+    {
+      "point": "data-0",
+      "type": "upload",
+      "room_id": "data",
+      "x": 4970,
+      "y": 2030,
+      "seconds": 8
+    },
+    {
+      "point": "data-1",
+      "type": "upload",
+      "room_id": "data",
+      "x": 5450,
+      "y": 2030,
+      "seconds": 8
+    },
+    {
+      "point": "transit-0",
+      "type": "thermal_balance",
+      "room_id": "transit",
+      "x": 3830,
+      "y": 2770,
+      "seconds": 3
+    },
+    {
+      "point": "transit-1",
+      "type": "thermal_balance",
+      "room_id": "transit",
+      "x": 4310,
+      "y": 2770,
+      "seconds": 3
+    },
+    {
+      "point": "airlock-0",
+      "type": "asteroid_defense",
+      "room_id": "airlock",
+      "x": 4970,
+      "y": 2770,
+      "seconds": 3
+    },
+    {
+      "point": "airlock-1",
+      "type": "asteroid_defense",
+      "room_id": "airlock",
+      "x": 5450,
+      "y": 2770,
+      "seconds": 3
+    }
+  ],
+  "vents": [
+    {
+      "id": "vent-reactor",
+      "room_id": "reactor",
+      "network": 0,
+      "x": 650,
+      "y": 1385,
+      "connected_vent_ids": [
+        "vent-maintenance",
+        "vent-power"
+      ]
+    },
+    {
+      "id": "vent-power",
+      "room_id": "power",
+      "network": 0,
+      "x": 1790,
+      "y": 1385,
+      "connected_vent_ids": [
+        "vent-cooling",
+        "vent-engines",
+        "vent-reactor"
+      ]
+    },
+    {
+      "id": "vent-engines",
+      "room_id": "engines",
+      "network": 0,
+      "x": 650,
+      "y": 2125,
+      "connected_vent_ids": [
+        "vent-power",
+        "vent-cooling"
+      ]
+    },
+    {
+      "id": "vent-cooling",
+      "room_id": "cooling",
+      "network": 0,
+      "x": 1790,
+      "y": 2125,
+      "connected_vent_ids": [
+        "vent-engines",
+        "vent-maintenance",
+        "vent-power"
+      ]
+    },
+    {
+      "id": "vent-maintenance",
+      "room_id": "maintenance",
+      "network": 0,
+      "x": 650,
+      "y": 2865,
+      "connected_vent_ids": [
+        "vent-cooling",
+        "vent-reactor"
+      ]
+    },
+    {
+      "id": "vent-bridge",
+      "room_id": "bridge",
+      "network": 1,
+      "x": 1790,
+      "y": 645,
+      "connected_vent_ids": [
+        "vent-observatory",
+        "vent-navigation"
+      ]
+    },
+    {
+      "id": "vent-navigation",
+      "room_id": "navigation",
+      "network": 1,
+      "x": 2930,
+      "y": 645,
+      "connected_vent_ids": [
+        "vent-bridge",
+        "vent-comms"
+      ]
+    },
+    {
+      "id": "vent-comms",
+      "room_id": "comms",
+      "network": 1,
+      "x": 4070,
+      "y": 645,
+      "connected_vent_ids": [
+        "vent-navigation",
+        "vent-security"
+      ]
+    },
+    {
+      "id": "vent-security",
+      "room_id": "security",
+      "network": 1,
+      "x": 2930,
+      "y": 1385,
+      "connected_vent_ids": [
+        "vent-comms",
+        "vent-observatory"
+      ]
+    },
+    {
+      "id": "vent-observatory",
+      "room_id": "observatory",
+      "network": 1,
+      "x": 4070,
+      "y": 1385,
+      "connected_vent_ids": [
+        "vent-bridge",
+        "vent-security"
+      ]
+    },
+    {
+      "id": "vent-medical",
+      "room_id": "medical",
+      "network": 2,
+      "x": 1790,
+      "y": 2865,
+      "connected_vent_ids": [
+        "vent-airlock",
+        "vent-biodome",
+        "vent-laboratory",
+        "vent-transit"
+      ]
+    },
+    {
+      "id": "vent-laboratory",
+      "room_id": "laboratory",
+      "network": 2,
+      "x": 1790,
+      "y": 3605,
+      "connected_vent_ids": [
+        "vent-medical",
+        "vent-biodome"
+      ]
+    },
+    {
+      "id": "vent-biodome",
+      "room_id": "biodome",
+      "network": 2,
+      "x": 2930,
+      "y": 2865,
+      "connected_vent_ids": [
+        "vent-cargo",
+        "vent-laboratory",
+        "vent-medical",
+        "vent-oxygen"
+      ]
+    },
+    {
+      "id": "vent-oxygen",
+      "room_id": "oxygen",
+      "network": 2,
+      "x": 2930,
+      "y": 3605,
+      "connected_vent_ids": [
+        "vent-biodome",
+        "vent-quarters"
+      ]
+    },
+    {
+      "id": "vent-quarters",
+      "room_id": "quarters",
+      "network": 2,
+      "x": 4070,
+      "y": 3605,
+      "connected_vent_ids": [
+        "vent-oxygen",
+        "vent-cargo"
+      ]
+    },
+    {
+      "id": "vent-cargo",
+      "room_id": "cargo",
+      "network": 2,
+      "x": 4070,
+      "y": 2125,
+      "connected_vent_ids": [
+        "vent-biodome",
+        "vent-quarters",
+        "vent-storage",
+        "vent-transit"
+      ]
+    },
+    {
+      "id": "vent-storage",
+      "room_id": "storage",
+      "network": 2,
+      "x": 5210,
+      "y": 1385,
+      "connected_vent_ids": [
+        "vent-cargo",
+        "vent-data"
+      ]
+    },
+    {
+      "id": "vent-data",
+      "room_id": "data",
+      "network": 2,
+      "x": 5210,
+      "y": 2125,
+      "connected_vent_ids": [
+        "vent-storage",
+        "vent-transit"
+      ]
+    },
+    {
+      "id": "vent-transit",
+      "room_id": "transit",
+      "network": 2,
+      "x": 4070,
+      "y": 2865,
+      "connected_vent_ids": [
+        "vent-airlock",
+        "vent-cargo",
+        "vent-data",
+        "vent-medical"
+      ]
+    },
+    {
+      "id": "vent-airlock",
+      "room_id": "airlock",
+      "network": 2,
+      "x": 5210,
+      "y": 2865,
+      "connected_vent_ids": [
+        "vent-transit",
+        "vent-medical"
+      ]
+    }
+  ],
+  "sabotage_panels": [
+    {
+      "id": "reactor-0",
+      "type": "reactor",
+      "room_id": "power",
+      "x": 1790,
+      "y": 1200
+    },
+    {
+      "id": "reactor-1",
+      "type": "reactor",
+      "room_id": "transit",
+      "x": 4070,
+      "y": 2680
+    },
+    {
+      "id": "oxygen-0",
+      "type": "oxygen",
+      "room_id": "medical",
+      "x": 1790,
+      "y": 2680
+    },
+    {
+      "id": "oxygen-1",
+      "type": "oxygen",
+      "room_id": "observatory",
+      "x": 4070,
+      "y": 1200
+    },
+    {
+      "id": "lights-0",
+      "type": "lights",
+      "room_id": "power",
+      "x": 1790,
+      "y": 1200
+    },
+    {
+      "id": "comms-0",
+      "type": "comms",
+      "room_id": "observatory",
+      "x": 4070,
+      "y": 1200
+    }
+  ],
+  "cameras": [
+    {
+      "id": "cam-power",
+      "room_id": "power",
+      "x": 1790,
+      "y": 1230,
+      "radius": 550
+    },
+    {
+      "id": "cam-cooling",
+      "room_id": "cooling",
+      "x": 1790,
+      "y": 1970,
+      "radius": 550
+    },
+    {
+      "id": "cam-security",
+      "room_id": "security",
+      "x": 2930,
+      "y": 1230,
+      "radius": 550
+    },
+    {
+      "id": "cam-observatory",
+      "room_id": "observatory",
+      "x": 4070,
+      "y": 1230,
+      "radius": 550
+    },
+    {
+      "id": "cam-medical",
+      "room_id": "medical",
+      "x": 1790,
+      "y": 2710,
+      "radius": 550
+    },
+    {
+      "id": "cam-biodome",
+      "room_id": "biodome",
+      "x": 2930,
+      "y": 2710,
+      "radius": 550
+    },
+    {
+      "id": "cam-cargo",
+      "room_id": "cargo",
+      "x": 4070,
+      "y": 1970,
+      "radius": 550
+    },
+    {
+      "id": "cam-transit",
+      "room_id": "transit",
+      "x": 4070,
+      "y": 2710,
+      "radius": 550
+    }
+  ],
+  "terminals": [
+    {
+      "id": "security",
+      "room_id": "security",
+      "type": "cameras",
+      "x": 2930,
+      "y": 1230
+    },
+    {
+      "id": "admin",
+      "room_id": "nexus",
+      "type": "admin",
+      "x": 3080,
+      "y": 1970
+    },
+    {
+      "id": "vitals",
+      "room_id": "medical",
+      "type": "vitals",
+      "x": 1790,
+      "y": 2710
+    }
+  ],
+  "decorations": [
+    {
+      "id": "reactor-machine0",
+      "kind": "reactor",
+      "room_id": "reactor",
+      "bounds": {
+        "x": 340,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "reactor-machine1",
+      "kind": "reactor",
+      "room_id": "reactor",
+      "bounds": {
+        "x": 580,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "reactor-machine2",
+      "kind": "reactor",
+      "room_id": "reactor",
+      "bounds": {
+        "x": 820,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "power-machine0",
+      "kind": "console",
+      "room_id": "power",
+      "bounds": {
+        "x": 1480,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "power-machine1",
+      "kind": "console",
+      "room_id": "power",
+      "bounds": {
+        "x": 1720,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "power-machine2",
+      "kind": "console",
+      "room_id": "power",
+      "bounds": {
+        "x": 1960,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "engines-machine0",
+      "kind": "engine",
+      "room_id": "engines",
+      "bounds": {
+        "x": 340,
+        "y": 1785,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "engines-machine1",
+      "kind": "engine",
+      "room_id": "engines",
+      "bounds": {
+        "x": 580,
+        "y": 1785,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "engines-machine2",
+      "kind": "engine",
+      "room_id": "engines",
+      "bounds": {
+        "x": 820,
+        "y": 1785,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "cooling-machine0",
+      "kind": "pipes",
+      "room_id": "cooling",
+      "bounds": {
+        "x": 1480,
+        "y": 1785,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "cooling-machine1",
+      "kind": "pipes",
+      "room_id": "cooling",
+      "bounds": {
+        "x": 1720,
+        "y": 1785,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "cooling-machine2",
+      "kind": "pipes",
+      "room_id": "cooling",
+      "bounds": {
+        "x": 1960,
+        "y": 1785,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "maintenance-machine0",
+      "kind": "console",
+      "room_id": "maintenance",
+      "bounds": {
+        "x": 340,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "maintenance-machine1",
+      "kind": "console",
+      "room_id": "maintenance",
+      "bounds": {
+        "x": 580,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "maintenance-machine2",
+      "kind": "console",
+      "room_id": "maintenance",
+      "bounds": {
+        "x": 820,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "bridge-machine0",
+      "kind": "console",
+      "room_id": "bridge",
+      "bounds": {
+        "x": 1480,
+        "y": 305,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "bridge-machine1",
+      "kind": "console",
+      "room_id": "bridge",
+      "bounds": {
+        "x": 1720,
+        "y": 305,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "bridge-machine2",
+      "kind": "console",
+      "room_id": "bridge",
+      "bounds": {
+        "x": 1960,
+        "y": 305,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "navigation-machine0",
+      "kind": "console",
+      "room_id": "navigation",
+      "bounds": {
+        "x": 2620,
+        "y": 305,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "navigation-machine1",
+      "kind": "console",
+      "room_id": "navigation",
+      "bounds": {
+        "x": 2860,
+        "y": 305,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "navigation-machine2",
+      "kind": "console",
+      "room_id": "navigation",
+      "bounds": {
+        "x": 3100,
+        "y": 305,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "comms-machine0",
+      "kind": "antenna",
+      "room_id": "comms",
+      "bounds": {
+        "x": 3760,
+        "y": 305,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "comms-machine1",
+      "kind": "antenna",
+      "room_id": "comms",
+      "bounds": {
+        "x": 4000,
+        "y": 305,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "comms-machine2",
+      "kind": "antenna",
+      "room_id": "comms",
+      "bounds": {
+        "x": 4240,
+        "y": 305,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "security-machine0",
+      "kind": "console",
+      "room_id": "security",
+      "bounds": {
+        "x": 2620,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "security-machine1",
+      "kind": "console",
+      "room_id": "security",
+      "bounds": {
+        "x": 2860,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "security-machine2",
+      "kind": "console",
+      "room_id": "security",
+      "bounds": {
+        "x": 3100,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "observatory-machine0",
+      "kind": "telescope",
+      "room_id": "observatory",
+      "bounds": {
+        "x": 3760,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "observatory-machine1",
+      "kind": "telescope",
+      "room_id": "observatory",
+      "bounds": {
+        "x": 4000,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "observatory-machine2",
+      "kind": "telescope",
+      "room_id": "observatory",
+      "bounds": {
+        "x": 4240,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "medical-machine0",
+      "kind": "capsule",
+      "room_id": "medical",
+      "bounds": {
+        "x": 1480,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "medical-machine1",
+      "kind": "capsule",
+      "room_id": "medical",
+      "bounds": {
+        "x": 1720,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "medical-machine2",
+      "kind": "capsule",
+      "room_id": "medical",
+      "bounds": {
+        "x": 1960,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "laboratory-machine0",
+      "kind": "capsule",
+      "room_id": "laboratory",
+      "bounds": {
+        "x": 1480,
+        "y": 3265,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "laboratory-machine1",
+      "kind": "capsule",
+      "room_id": "laboratory",
+      "bounds": {
+        "x": 1720,
+        "y": 3265,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "laboratory-machine2",
+      "kind": "capsule",
+      "room_id": "laboratory",
+      "bounds": {
+        "x": 1960,
+        "y": 3265,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "biodome-machine0",
+      "kind": "pod",
+      "room_id": "biodome",
+      "bounds": {
+        "x": 2620,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "biodome-machine1",
+      "kind": "pod",
+      "room_id": "biodome",
+      "bounds": {
+        "x": 2860,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "biodome-machine2",
+      "kind": "pod",
+      "room_id": "biodome",
+      "bounds": {
+        "x": 3100,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "oxygen-machine0",
+      "kind": "pipes",
+      "room_id": "oxygen",
+      "bounds": {
+        "x": 2620,
+        "y": 3265,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "oxygen-machine1",
+      "kind": "pipes",
+      "room_id": "oxygen",
+      "bounds": {
+        "x": 2860,
+        "y": 3265,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "oxygen-machine2",
+      "kind": "pipes",
+      "room_id": "oxygen",
+      "bounds": {
+        "x": 3100,
+        "y": 3265,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "quarters-machine0",
+      "kind": "bed",
+      "room_id": "quarters",
+      "bounds": {
+        "x": 3760,
+        "y": 3265,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "quarters-machine1",
+      "kind": "bed",
+      "room_id": "quarters",
+      "bounds": {
+        "x": 4000,
+        "y": 3265,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "quarters-machine2",
+      "kind": "bed",
+      "room_id": "quarters",
+      "bounds": {
+        "x": 4240,
+        "y": 3265,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "cargo-machine0",
+      "kind": "crate",
+      "room_id": "cargo",
+      "bounds": {
+        "x": 3760,
+        "y": 1785,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "cargo-machine1",
+      "kind": "crate",
+      "room_id": "cargo",
+      "bounds": {
+        "x": 4000,
+        "y": 1785,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "cargo-machine2",
+      "kind": "crate",
+      "room_id": "cargo",
+      "bounds": {
+        "x": 4240,
+        "y": 1785,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "storage-machine0",
+      "kind": "fuel",
+      "room_id": "storage",
+      "bounds": {
+        "x": 4900,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "storage-machine1",
+      "kind": "fuel",
+      "room_id": "storage",
+      "bounds": {
+        "x": 5140,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "storage-machine2",
+      "kind": "fuel",
+      "room_id": "storage",
+      "bounds": {
+        "x": 5380,
+        "y": 1045,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "data-machine0",
+      "kind": "servers",
+      "room_id": "data",
+      "bounds": {
+        "x": 4900,
+        "y": 1785,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "data-machine1",
+      "kind": "servers",
+      "room_id": "data",
+      "bounds": {
+        "x": 5140,
+        "y": 1785,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "data-machine2",
+      "kind": "servers",
+      "room_id": "data",
+      "bounds": {
+        "x": 5380,
+        "y": 1785,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "transit-machine0",
+      "kind": "tram",
+      "room_id": "transit",
+      "bounds": {
+        "x": 3760,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "transit-machine1",
+      "kind": "tram",
+      "room_id": "transit",
+      "bounds": {
+        "x": 4000,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "transit-machine2",
+      "kind": "tram",
+      "room_id": "transit",
+      "bounds": {
+        "x": 4240,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "airlock-machine0",
+      "kind": "airlock",
+      "room_id": "airlock",
+      "bounds": {
+        "x": 4900,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "airlock-machine1",
+      "kind": "airlock",
+      "room_id": "airlock",
+      "bounds": {
+        "x": 5140,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    },
+    {
+      "id": "airlock-machine2",
+      "kind": "airlock",
+      "room_id": "airlock",
+      "bounds": {
+        "x": 5380,
+        "y": 2525,
+        "width": 130,
+        "height": 90
+      }
+    }
+  ],
+  "navigation": {
+    "nodes": [
+      {
+        "id": "reactor",
+        "x": 650,
+        "y": 1230
+      },
+      {
+        "id": "power",
+        "x": 1790,
+        "y": 1230
+      },
+      {
+        "id": "engines",
+        "x": 650,
+        "y": 1970
+      },
+      {
+        "id": "cooling",
+        "x": 1790,
+        "y": 1970
+      },
+      {
+        "id": "maintenance",
+        "x": 650,
+        "y": 2710
+      },
+      {
+        "id": "bridge",
+        "x": 1790,
+        "y": 490
+      },
+      {
+        "id": "navigation",
+        "x": 2930,
+        "y": 490
+      },
+      {
+        "id": "comms",
+        "x": 4070,
+        "y": 490
+      },
+      {
+        "id": "security",
+        "x": 2930,
+        "y": 1230
+      },
+      {
+        "id": "observatory",
+        "x": 4070,
+        "y": 1230
+      },
+      {
+        "id": "medical",
+        "x": 1790,
+        "y": 2710
+      },
+      {
+        "id": "laboratory",
+        "x": 1790,
+        "y": 3450
+      },
+      {
+        "id": "biodome",
+        "x": 2930,
+        "y": 2710
+      },
+      {
+        "id": "oxygen",
+        "x": 2930,
+        "y": 3450
+      },
+      {
+        "id": "quarters",
+        "x": 4070,
+        "y": 3450
+      },
+      {
+        "id": "cargo",
+        "x": 4070,
+        "y": 1970
+      },
+      {
+        "id": "storage",
+        "x": 5210,
+        "y": 1230
+      },
+      {
+        "id": "data",
+        "x": 5210,
+        "y": 1970
+      },
+      {
+        "id": "transit",
+        "x": 4070,
+        "y": 2710
+      },
+      {
+        "id": "airlock",
+        "x": 5210,
+        "y": 2710
+      },
+      {
+        "id": "nexus",
+        "x": 2930,
+        "y": 1970
+      }
+    ],
+    "edges": [
+      [
+        "reactor",
+        "power"
+      ],
+      [
+        "reactor",
+        "engines"
+      ],
+      [
+        "power",
+        "security"
+      ],
+      [
+        "power",
+        "cooling"
+      ],
+      [
+        "engines",
+        "cooling"
+      ],
+      [
+        "engines",
+        "maintenance"
+      ],
+      [
+        "cooling",
+        "nexus"
+      ],
+      [
+        "cooling",
+        "medical"
+      ],
+      [
+        "maintenance",
+        "medical"
+      ],
+      [
+        "bridge",
+        "navigation"
+      ],
+      [
+        "bridge",
+        "power"
+      ],
+      [
+        "navigation",
+        "comms"
+      ],
+      [
+        "navigation",
+        "security"
+      ],
+      [
+        "comms",
+        "observatory"
+      ],
+      [
+        "security",
+        "observatory"
+      ],
+      [
+        "security",
+        "nexus"
+      ],
+      [
+        "observatory",
+        "storage"
+      ],
+      [
+        "observatory",
+        "cargo"
+      ],
+      [
+        "medical",
+        "biodome"
+      ],
+      [
+        "medical",
+        "laboratory"
+      ],
+      [
+        "laboratory",
+        "oxygen"
+      ],
+      [
+        "biodome",
+        "transit"
+      ],
+      [
+        "biodome",
+        "oxygen"
+      ],
+      [
+        "oxygen",
+        "quarters"
+      ],
+      [
+        "cargo",
+        "data"
+      ],
+      [
+        "cargo",
+        "transit"
+      ],
+      [
+        "storage",
+        "data"
+      ],
+      [
+        "data",
+        "airlock"
+      ],
+      [
+        "transit",
+        "airlock"
+      ],
+      [
+        "transit",
+        "quarters"
+      ],
+      [
+        "nexus",
+        "cargo"
+      ],
+      [
+        "nexus",
+        "biodome"
+      ]
+    ]
+  },
+  "occlusion": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 6144,
+      "height": 230
+    },
+    {
+      "x": 0,
+      "y": 230,
+      "width": 1340,
+      "height": 520
+    },
+    {
+      "x": 2240,
+      "y": 230,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 230,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 230,
+      "width": 1624,
+      "height": 520
+    },
+    {
+      "x": 2240,
+      "y": 580,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 580,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 0,
+      "y": 750,
+      "width": 1700,
+      "height": 220
+    },
+    {
+      "x": 1880,
+      "y": 750,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 3020,
+      "y": 750,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 4160,
+      "y": 750,
+      "width": 1984,
+      "height": 220
+    },
+    {
+      "x": 0,
+      "y": 970,
+      "width": 200,
+      "height": 520
+    },
+    {
+      "x": 1100,
+      "y": 970,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 2240,
+      "y": 970,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 970,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 970,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 5660,
+      "y": 970,
+      "width": 484,
+      "height": 520
+    },
+    {
+      "x": 1100,
+      "y": 1320,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 2240,
+      "y": 1320,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 1320,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 1320,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 0,
+      "y": 1490,
+      "width": 560,
+      "height": 220
+    },
+    {
+      "x": 740,
+      "y": 1490,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 1880,
+      "y": 1490,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 3020,
+      "y": 1490,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 4160,
+      "y": 1490,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 5300,
+      "y": 1490,
+      "width": 844,
+      "height": 220
+    },
+    {
+      "x": 0,
+      "y": 1710,
+      "width": 200,
+      "height": 520
+    },
+    {
+      "x": 1100,
+      "y": 1710,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 2240,
+      "y": 1710,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 1710,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 1710,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 5660,
+      "y": 1710,
+      "width": 484,
+      "height": 520
+    },
+    {
+      "x": 1100,
+      "y": 2060,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 2240,
+      "y": 2060,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 2060,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 2060,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 0,
+      "y": 2230,
+      "width": 560,
+      "height": 220
+    },
+    {
+      "x": 740,
+      "y": 2230,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 1880,
+      "y": 2230,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 3020,
+      "y": 2230,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 4160,
+      "y": 2230,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 5300,
+      "y": 2230,
+      "width": 844,
+      "height": 220
+    },
+    {
+      "x": 0,
+      "y": 2450,
+      "width": 200,
+      "height": 520
+    },
+    {
+      "x": 1100,
+      "y": 2450,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 2240,
+      "y": 2450,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 2450,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 2450,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 5660,
+      "y": 2450,
+      "width": 484,
+      "height": 520
+    },
+    {
+      "x": 1100,
+      "y": 2800,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 2240,
+      "y": 2800,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 2800,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 2800,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 0,
+      "y": 2970,
+      "width": 1700,
+      "height": 220
+    },
+    {
+      "x": 1880,
+      "y": 2970,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 3020,
+      "y": 2970,
+      "width": 960,
+      "height": 220
+    },
+    {
+      "x": 4160,
+      "y": 2970,
+      "width": 1984,
+      "height": 220
+    },
+    {
+      "x": 0,
+      "y": 3190,
+      "width": 1340,
+      "height": 520
+    },
+    {
+      "x": 2240,
+      "y": 3190,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 3190,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 4520,
+      "y": 3190,
+      "width": 1624,
+      "height": 520
+    },
+    {
+      "x": 2240,
+      "y": 3540,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 3380,
+      "y": 3540,
+      "width": 240,
+      "height": 170
+    },
+    {
+      "x": 0,
+      "y": 3710,
+      "width": 6144,
+      "height": 386
+    },
+    {
+      "x": 340,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 580,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 820,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1480,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1720,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1960,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 340,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 580,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 820,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1480,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1720,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1960,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 340,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 580,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 820,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1480,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1720,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1960,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2620,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2860,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3100,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3760,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4000,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4240,
+      "y": 305,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2620,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2860,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3100,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3760,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4000,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4240,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1480,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1720,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1960,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1480,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1720,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 1960,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2620,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2860,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3100,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2620,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 2860,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3100,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3760,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4000,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4240,
+      "y": 3265,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3760,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4000,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4240,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4900,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 5140,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 5380,
+      "y": 1045,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4900,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 5140,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 5380,
+      "y": 1785,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 3760,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4000,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4240,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 4900,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 5140,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    },
+    {
+      "x": 5380,
+      "y": 2525,
+      "width": 130,
+      "height": 90
+    }
+  ],
+  "audio_zones": [
+    {
+      "room_id": "reactor",
+      "surface": "metal"
+    },
+    {
+      "room_id": "power",
+      "surface": "metal"
+    },
+    {
+      "room_id": "engines",
+      "surface": "metal"
+    },
+    {
+      "room_id": "cooling",
+      "surface": "metal"
+    },
+    {
+      "room_id": "maintenance",
+      "surface": "metal"
+    },
+    {
+      "room_id": "bridge",
+      "surface": "metal"
+    },
+    {
+      "room_id": "navigation",
+      "surface": "metal"
+    },
+    {
+      "room_id": "comms",
+      "surface": "metal"
+    },
+    {
+      "room_id": "security",
+      "surface": "metal"
+    },
+    {
+      "room_id": "observatory",
+      "surface": "metal"
+    },
+    {
+      "room_id": "medical",
+      "surface": "soft"
+    },
+    {
+      "room_id": "laboratory",
+      "surface": "soft"
+    },
+    {
+      "room_id": "biodome",
+      "surface": "soft"
+    },
+    {
+      "room_id": "oxygen",
+      "surface": "soft"
+    },
+    {
+      "room_id": "quarters",
+      "surface": "soft"
+    },
+    {
+      "room_id": "cargo",
+      "surface": "metal"
+    },
+    {
+      "room_id": "storage",
+      "surface": "metal"
+    },
+    {
+      "room_id": "data",
+      "surface": "metal"
+    },
+    {
+      "room_id": "transit",
+      "surface": "metal"
+    },
+    {
+      "room_id": "airlock",
+      "surface": "metal"
+    },
+    {
+      "room_id": "nexus",
+      "surface": "metal"
+    }
+  ]
+}

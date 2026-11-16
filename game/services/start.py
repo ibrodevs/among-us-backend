@@ -2,6 +2,9 @@ from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
 from game.physics import MAP
+from game.maps import get_map
+from game.settings import settings_for
+from game.tasks import assign_tasks
 from game.models import TaskAssignment
 from rest_framework.exceptions import APIException, NotFound, PermissionDenied
 
@@ -46,7 +49,22 @@ def start_game(*, code, player):
 
     roles = assign_roles(player_ids)
     now = timezone.now()
-    game = GameSession.objects.create(room=room, last_tick_at=now)
+    options = settings_for(room)
+    version = options["map_version"]
+    mode = (
+        options["area"]
+        if options["area"] != "auto"
+        else ("compact" if len(members) < 8 else "full")
+    )
+    game = GameSession.objects.create(
+        room=room,
+        last_tick_at=now,
+        map_version=version,
+        map_mode=mode,
+        settings=options if version == 2 else {},
+    )
+    spawns = get_map(version)["spawns"]
+    points = [(p["x"], p["y"]) for p in spawns] if version == 2 else SPAWN_POINTS
     PlayerGameState.objects.bulk_create(
         [
             PlayerGameState(
@@ -55,21 +73,39 @@ def start_game(*, code, player):
                 role=roles[player_id],
                 x=point[0],
                 y=point[1],
-                kill_available_at=now + timedelta(seconds=25),
+                kill_available_at=now + timedelta(seconds=options["kill_cooldown"]),
             )
-            for player_id, point in zip(player_ids, SPAWN_POINTS)
+            for player_id, point in zip(player_ids, points)
         ]
     )
-    TaskAssignment.objects.bulk_create(
-        [
-            TaskAssignment(
-                game=game, player_id=pid, task_type=t["type"], task_point=t["point"]
+    if version == 2:
+        assign_tasks(game, [pid for pid in player_ids if roles[pid] == "crew"])
+        if options["special_roles"]:
+            crew = list(game.player_states.filter(role="crew").order_by("player_id"))
+            for state, role in zip(crew, ["technician", "medic", "tracker"]):
+                state.special_role = role
+                state.save(update_fields=["special_role"])
+            state = game.player_states.filter(role="impostor").first()
+            state.special_role = "mimic"
+            state.save(update_fields=["special_role"])
+        chosen = {m.player_id: m.color for m in members if m.color is not None}
+        free = iter(c for c in range(10) if c not in chosen.values())
+        for state in game.player_states.order_by("player_id"):
+            state.color = (
+                chosen[state.player_id] if state.player_id in chosen else next(free)
             )
-            for pid in player_ids
-            if roles[pid] == "crew"
-            for t in MAP["tasks"]
-        ]
-    )
+            state.save(update_fields=["color"])
+    else:
+        TaskAssignment.objects.bulk_create(
+            [
+                TaskAssignment(
+                    game=game, player_id=pid, task_type=t["type"], task_point=t["point"]
+                )
+                for pid in player_ids
+                if roles[pid] == "crew"
+                for t in MAP["tasks"]
+            ]
+        )
     room.status = Room.Status.PLAYING
     room.save(update_fields=["status"])
     room_data = RoomSerializer(room).data

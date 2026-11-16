@@ -4,7 +4,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
 from rooms.models import Room, RoomMembership
@@ -70,11 +70,11 @@ def leave_room(request, code: str):
         membership = get_object_or_404(
             RoomMembership, room=room, player=request.user.player
         )
+        membership.delete()
         if room.status != Room.Status.WAITING:
             from game.services.departure import depart_match
 
             depart_match(room, request.user.player)
-        membership.delete()
         next_host = (
             room.memberships.select_related("player")
             .order_by("joined_at", "id")
@@ -88,3 +88,67 @@ def leave_room(request, code: str):
             room.save(update_fields=["host"])
         notify_lobby_changed(room.code)
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["GET", "PATCH"])
+def room_settings(request, code):
+    from game.settings import settings_for, validate_settings
+
+    with transaction.atomic():
+        room = get_object_or_404(Room.objects.select_for_update(), code=code.upper())
+        if not RoomMembership.objects.filter(
+            room=room, player=request.user.player
+        ).exists():
+            raise PermissionDenied("You are not a member")
+        if request.method == "PATCH":
+            if room.host_id != request.user.player.pk:
+                raise PermissionDenied("Host only")
+            if room.status != "waiting":
+                return Response(
+                    {"detail": "Settings are locked after start"}, status=409
+                )
+            if not isinstance(request.data, dict):
+                raise ValidationError({"detail": "Expected a settings object"})
+            room.settings = validate_settings({**settings_for(room), **request.data})
+            if room.settings["max_players"] < room.memberships.count():
+                raise ValidationError(
+                    {"detail": "Maximum cannot be below the current roster"}
+                )
+            room.max_players = room.settings["max_players"]
+            room.save(update_fields=["settings", "max_players"])
+            notify_lobby_changed(room.code)
+        return Response(settings_for(room))
+
+
+@api_view(["GET", "PATCH"])
+def room_appearance(request, code):
+    with transaction.atomic():
+        room = get_object_or_404(Room.objects.select_for_update(), code=code.upper())
+        member = get_object_or_404(
+            RoomMembership, room=room, player=request.user.player
+        )
+        if request.method == "PATCH":
+            if room.status != "waiting":
+                return Response(
+                    {"detail": "Appearance is locked after start"}, status=409
+                )
+            color = (
+                request.data.get("color") if isinstance(request.data, dict) else None
+            )
+            if type(color) is not int or not 0 <= color < 10:
+                raise ValidationError({"detail": "Choose a color from 0 to 9"})
+            if room.memberships.filter(color=color).exclude(pk=member.pk).exists():
+                return Response(
+                    {"detail": "This color is already selected"}, status=409
+                )
+            member.color = color
+            member.save(update_fields=["color"])
+            notify_lobby_changed(room.code)
+        return Response(
+            {
+                "players": [
+                    {"player_id": str(m.player_id), "color": m.color}
+                    for m in room.memberships.all()
+                ]
+            }
+        )

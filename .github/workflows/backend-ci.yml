@@ -43,6 +43,8 @@ jobs:
         run: python manage.py makemigrations --check --dry-run
       - name: Apply migrations
         run: python manage.py migrate --noinput
+      - name: Verify Asterion reachability
+        run: python -m scripts.check_asterion
       - name: Run tests
         run: python manage.py test
       - name: Verify idle Redis channel stays connected

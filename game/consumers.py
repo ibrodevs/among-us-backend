@@ -34,6 +34,10 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
         self.player_id = None
         self.joined_groups = []
         self.command_times = []
+        self.protocol_version = 1
+        self.last_game_version = -1
+        self.previous_public = None
+        self.previous_own = None
         await self.accept()
         self.auth_timeout = asyncio.create_task(self._expire_unauthenticated())
 
@@ -74,6 +78,7 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 await self._error("UNAUTHORIZED", "Authenticate first", close_code=4401)
                 return
             try:
+                self.protocol_version = content.get("protocol_version", 1)
                 self.player_id = await self._authenticate(content["token"])
                 self.auth_timeout.cancel()
                 # Subscribe before reading state: a concurrent start is either
@@ -122,6 +127,17 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 )
                 if own is not None:
                     await self.send_json(own)
+                    if own.get("protocol_version") == 2:
+                        for event in events:
+                            if event["type"] in ["task.challenge", "task.verified"]:
+                                await self.send_json(
+                                    {
+                                        "protocol_version": 2,
+                                        "game_id": own["game_id"],
+                                        "state_version": own["state_version"],
+                                        **event,
+                                    }
+                                )
                 await database_sync_to_async(publish_update)(
                     self.room_code, snapshot, events, True
                 )
@@ -210,7 +226,10 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
         get_member_room(self.room_code, self.player_id)
         game = GameSession.objects.filter(room__code=self.room_code).first()
         return (
-            (public_snapshot(game), private_snapshot(game, self.player_id))
+            (
+                public_snapshot(game, viewer_id=self.player_id),
+                private_snapshot(game, self.player_id),
+            )
             if game
             else (None, None)
         )
@@ -219,8 +238,24 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
         try:
             public, own = await self._game_state()
             if public:
+                if public.get("protocol_version") == 2 and self.protocol_version != 2:
+                    await self._error(
+                        "UPGRADE_REQUIRED",
+                        "Update the client for Asterion",
+                        close_code=4406,
+                    )
+                    return
+                self.last_game_version = public["state_version"]
                 await self.send_json(public)
                 await self.send_json(own)
+                if public.get("protocol_version") == 2:
+                    from game.observer_events import changes
+
+                    for event in changes(
+                        self.previous_public, public, self.previous_own, own
+                    ):
+                        await self.send_json(event)
+                    self.previous_public, self.previous_own = public, own
         except AuthenticationFailed:
             await self._error("UNAUTHORIZED", "Invalid guest or room", close_code=4401)
         except SERVICE_ERRORS:
@@ -232,6 +267,10 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
 
     async def game_update(self, event):
         try:
+            if event["snapshot"].get("protocol_version") == 2:
+                if event["snapshot"].get("state_version", 0) > self.last_game_version:
+                    await self._send_game_state()
+                return
             await database_sync_to_async(get_member_room)(
                 self.room_code, self.player_id
             )

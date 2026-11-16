@@ -12,9 +12,14 @@ class Room(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     code = models.CharField(max_length=6, unique=True, db_index=True)
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.WAITING)
-    host = models.ForeignKey(Player, on_delete=models.PROTECT, related_name="hosted_rooms")
+    status = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.WAITING
+    )
+    host = models.ForeignKey(
+        Player, on_delete=models.PROTECT, related_name="hosted_rooms"
+    )
     max_players = models.PositiveSmallIntegerField(default=10)
+    settings = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
 
     @property
@@ -25,11 +30,21 @@ class Room(models.Model):
 class RoomMembership(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="memberships")
-    player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="memberships")
+    player = models.ForeignKey(
+        Player, on_delete=models.CASCADE, related_name="memberships"
+    )
+    color = models.PositiveSmallIntegerField(null=True, blank=True)
     is_connected = models.BooleanField(default=False)
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["room", "player"], name="unique_room_membership"),
+            models.UniqueConstraint(
+                fields=["room", "player"], name="unique_room_membership"
+            ),
+            models.UniqueConstraint(fields=["room", "color"], name="unique_room_color"),
+            models.CheckConstraint(
+                condition=models.Q(color__isnull=True) | models.Q(color__lt=10),
+                name="valid_room_color",
+            ),
         ]
