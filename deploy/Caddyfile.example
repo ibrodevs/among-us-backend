@@ -1,0 +1,4 @@
+# Replace with the owner-approved backend hostname.
+backend.example.com {
+    reverse_proxy 127.0.0.1:8000
+}

@@ -23,7 +23,9 @@ def get_members_room(code: str, player):
 def create_room(request):
     serializer = RoomCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    room = create_room_for_player(request.user.player, max_players=serializer.validated_data["max_players"])
+    room = create_room_for_player(
+        request.user.player, max_players=serializer.validated_data["max_players"]
+    )
     return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
 
 
@@ -33,17 +35,24 @@ def join_room(request):
     serializer.is_valid(raise_exception=True)
     player = request.user.player
     with transaction.atomic():
-        room = get_object_or_404(Room.objects.select_for_update(), code=serializer.validated_data["code"])
+        room = get_object_or_404(
+            Room.objects.select_for_update(), code=serializer.validated_data["code"]
+        )
         if RoomMembership.objects.filter(room=room, player=player).exists():
             return Response(RoomSerializer(room).data)
         if room.status != Room.Status.WAITING:
-            return Response({"detail": "Room already started"}, status=status.HTTP_409_CONFLICT)
+            return Response(
+                {"detail": "Room already started"}, status=status.HTTP_409_CONFLICT
+            )
         if room.memberships.count() >= room.max_players:
             return Response({"detail": "Room is full"}, status=status.HTTP_409_CONFLICT)
         nickname = normalize("NFC", player.nickname).casefold()
         member_names = room.memberships.values_list("player__nickname", flat=True)
         if any(normalize("NFC", name).casefold() == nickname for name in member_names):
-            return Response({"detail": "Nickname already used in this room"}, status=status.HTTP_409_CONFLICT)
+            return Response(
+                {"detail": "Nickname already used in this room"},
+                status=status.HTTP_409_CONFLICT,
+            )
         RoomMembership.objects.create(room=room, player=player)
         notify_lobby_changed(room.code)
         return Response(RoomSerializer(room).data)
@@ -58,13 +67,22 @@ def room_detail(request, code: str):
 def leave_room(request, code: str):
     with transaction.atomic():
         room = get_object_or_404(Room.objects.select_for_update(), code=code.upper())
-        membership = get_object_or_404(RoomMembership, room=room, player=request.user.player)
+        membership = get_object_or_404(
+            RoomMembership, room=room, player=request.user.player
+        )
         if room.status != Room.Status.WAITING:
-            return Response({"detail": "In-game leaving will be handled by the game engine"}, status=status.HTTP_409_CONFLICT)
+            from game.services.departure import depart_match
+
+            depart_match(room, request.user.player)
         membership.delete()
-        next_host = room.memberships.select_related("player").order_by("joined_at", "id").first()
+        next_host = (
+            room.memberships.select_related("player")
+            .order_by("joined_at", "id")
+            .first()
+        )
         if next_host is None:
-            room.delete()
+            if room.status == Room.Status.WAITING:
+                room.delete()
         elif room.host_id == request.user.player.id:
             room.host = next_host.player
             room.save(update_fields=["host"])
