@@ -1,6 +1,9 @@
 import secrets
-from django.db import IntegrityError, transaction
+
+from django.db import transaction
+
 from rooms.models import Room, RoomMembership
+from rooms.signals import lobby_changed
 
 CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
@@ -11,11 +14,18 @@ def new_room_code() -> str:
 
 def create_room_for_player(player, *, max_players: int) -> Room:
     for _ in range(20):
-        try:
-            with transaction.atomic():
-                room = Room.objects.create(code=new_room_code(), host=player, max_players=max_players)
+        with transaction.atomic():
+            room, created = Room.objects.get_or_create(
+                code=new_room_code(),
+                defaults={"host": player, "max_players": max_players},
+            )
+            if created:
                 RoomMembership.objects.create(room=room, player=player)
                 return room
-        except IntegrityError:
-            continue
     raise RuntimeError("Could not allocate a unique room code")
+
+
+def notify_lobby_changed(room_code: str) -> None:
+    transaction.on_commit(
+        lambda: lobby_changed.send_robust(sender=Room, room_code=room_code)
+    )

@@ -1,0 +1,40 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Stage A live acceptance evidence</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f2f5f9;color:#18283d;font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:40px}main{max-width:1200px;margin:auto}header{display:flex;align-items:center;justify-content:space-between}h1{margin:8px 0;font-size:34px}h2{font-size:19px;margin-top:28px}.eyebrow{color:#44617e;letter-spacing:.12em;font-weight:700;font-size:12px}.badge,.pass{color:#087345;font-weight:700}.badge{background:#d7f4e7;padding:12px 18px;border-radius:10px}.sub{color:#53667e;line-height:1.6}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}article,.panel{background:white;border:1px solid #dce3ed;border-radius:12px;padding:20px}article span{font-size:12px;color:#62758d}h3{margin:10px 0}code{font:10px ui-monospace,monospace}.role{display:inline-block;margin-top:18px;padding:6px 12px;border-radius:7px;background:#e9effa;font-size:20px;font-weight:700}article p{color:#62758d;font-size:12px}.columns{display:grid;grid-template-columns:1fr 1.25fr;gap:18px;margin-top:18px}table{border-collapse:collapse;width:100%}td{border-bottom:1px solid #edf0f5;padding:12px 4px;text-transform:capitalize}td:nth-child(2){font:700 17px ui-monospace,monospace}pre{font:11px/1.4 ui-monospace,monospace;white-space:pre-wrap;margin:0}.notes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}.note{background:#e5f3ec;border-radius:8px;padding:12px;color:#0a6441;font-size:13px}footer{margin-top:20px;color:#62758d;font-size:12px}
+</style><main><header><div><div class="eyebrow">AMONG US BACKEND / STAGE A</div><h1>Match start &amp; private roles</h1></div><div class="badge">LIVE CHECK PASSED</div></header><p class="sub">Actual HTTP + WebSocket responses through Django ASGI, PostgreSQL and Redis.<br>RECORDED · 12 Nov 2026 · 12:50 · Asia/Bishkek · Room CWG92H</p><h2>Four independent authenticated connections</h2><div class="cards"><article><span>Authenticated connection 1</span><h3>Demo0</h3><code>auth.ok → room.snapshot → game.started</code><div class="role">crew</div><p>Own tasks: [] · version 1</p></article><article><span>Authenticated connection 2</span><h3>Demo1</h3><code>auth.ok → room.snapshot → game.started</code><div class="role">crew</div><p>Own tasks: [] · version 1</p></article><article><span>Authenticated connection 3</span><h3>Demo2</h3><code>auth.ok → room.snapshot → game.started</code><div class="role">impostor</div><p>Own tasks: [] · version 1</p></article><article><span>Authenticated connection 4</span><h3>Demo3</h3><code>auth.ok → room.snapshot → game.started</code><div class="role">crew</div><p>Own tasks: [] · version 1</p></article></div><div class="columns"><section class="panel"><h2>REST acceptance</h2><table><tr><td>no token</td><td>401</td><td class="pass">PASS</td></tr><tr><td>one player</td><td>409</td><td class="pass">PASS</td></tr><tr><td>non host</td><td>403</td><td class="pass">PASS</td></tr><tr><td>host start</td><td>200</td><td class="pass">PASS</td></tr><tr><td>repeat start</td><td>409</td><td class="pass">PASS</td></tr></table><div class="notes"><div class="note">Reconnect: same game, role &amp; version</div><div class="note">Public payloads: no roles or tokens</div></div><p class="sub">Each role above was read from its owner's authenticated connection. Guest tokens are omitted.</p></section><section class="panel"><h2>Public room event</h2><pre>{
+  &quot;type&quot;: &quot;room.snapshot&quot;,
+  &quot;room&quot;: {
+    &quot;id&quot;: &quot;845facf5-863a-47ce-b16e-36463287314b&quot;,
+    &quot;code&quot;: &quot;CWG92H&quot;,
+    &quot;status&quot;: &quot;playing&quot;,
+    &quot;min_players&quot;: 4,
+    &quot;max_players&quot;: 10,
+    &quot;host_player_id&quot;: &quot;157d7159-0e6b-4e46-9e5d-8f50aa4c402a&quot;,
+    &quot;players&quot;: [
+      {
+        &quot;id&quot;: &quot;157d7159-0e6b-4e46-9e5d-8f50aa4c402a&quot;,
+        &quot;nickname&quot;: &quot;Demo0&quot;,
+        &quot;is_host&quot;: true,
+        &quot;is_connected&quot;: true
+      },
+      {
+        &quot;id&quot;: &quot;de78d163-405c-4bbb-8e9e-69cfc6e39ab0&quot;,
+        &quot;nickname&quot;: &quot;Demo1&quot;,
+        &quot;is_host&quot;: false,
+        &quot;is_connected&quot;: true
+      },
+      {
+        &quot;id&quot;: &quot;214eb09e-dcd2-4aca-9d8f-86ef0fc08db4&quot;,
+        &quot;nickname&quot;: &quot;Demo2&quot;,
+        &quot;is_host&quot;: false,
+        &quot;is_connected&quot;: true
+      },
+      {
+        &quot;id&quot;: &quot;e5c9eed1-2413-4fdb-8450-8c7785e1356b&quot;,
+        &quot;nickname&quot;: &quot;Demo3&quot;,
+        &quot;is_host&quot;: false,
+        &quot;is_connected&quot;: true
+      }
+    ],
+    &quot;created_at&quot;: &quot;2026-11-12T06:50:41.986566Z&quot;
+  }
+}</pre></section></div><footer>Evidence viewer for the local integration demo. This is not the game frontend. These disposable demo identities were removed after capture.<br>Source: demo.json · Reproduce: python -m game.demo_stage_a</footer></main></html>

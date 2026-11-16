@@ -1,0 +1,102 @@
+{
+  "recorded_at": "2026-11-12T06:50:42.435807+00:00",
+  "transport": "Live HTTP and WebSocket over ASGI, PostgreSQL and Redis",
+  "http": {
+    "no_token": 401,
+    "one_player": 409,
+    "non_host": 403,
+    "host_start": 200,
+    "repeat_start": 409
+  },
+  "public_room": {
+    "id": "845facf5-863a-47ce-b16e-36463287314b",
+    "code": "CWG92H",
+    "status": "playing",
+    "min_players": 4,
+    "max_players": 10,
+    "host_player_id": "157d7159-0e6b-4e46-9e5d-8f50aa4c402a",
+    "players": [
+      {
+        "id": "157d7159-0e6b-4e46-9e5d-8f50aa4c402a",
+        "nickname": "Demo0",
+        "is_host": true,
+        "is_connected": true
+      },
+      {
+        "id": "de78d163-405c-4bbb-8e9e-69cfc6e39ab0",
+        "nickname": "Demo1",
+        "is_host": false,
+        "is_connected": true
+      },
+      {
+        "id": "214eb09e-dcd2-4aca-9d8f-86ef0fc08db4",
+        "nickname": "Demo2",
+        "is_host": false,
+        "is_connected": true
+      },
+      {
+        "id": "e5c9eed1-2413-4fdb-8450-8c7785e1356b",
+        "nickname": "Demo3",
+        "is_host": false,
+        "is_connected": true
+      }
+    ],
+    "created_at": "2026-11-12T06:50:41.986566Z"
+  },
+  "authenticated_clients": [
+    {
+      "nickname": "Demo0",
+      "auth": "auth.ok",
+      "own_state": {
+        "type": "game.started",
+        "game_id": "f69f8224-4554-4bef-86fc-f0af3ddbe08c",
+        "room_code": "CWG92H",
+        "started_at": "2026-11-12T06:50:42.233869+00:00",
+        "state_version": 1,
+        "role": "crew",
+        "tasks": []
+      }
+    },
+    {
+      "nickname": "Demo1",
+      "auth": "auth.ok",
+      "own_state": {
+        "type": "game.started",
+        "game_id": "f69f8224-4554-4bef-86fc-f0af3ddbe08c",
+        "room_code": "CWG92H",
+        "started_at": "2026-11-12T06:50:42.233869+00:00",
+        "state_version": 1,
+        "role": "crew",
+        "tasks": []
+      }
+    },
+    {
+      "nickname": "Demo2",
+      "auth": "auth.ok",
+      "own_state": {
+        "type": "game.started",
+        "game_id": "f69f8224-4554-4bef-86fc-f0af3ddbe08c",
+        "room_code": "CWG92H",
+        "started_at": "2026-11-12T06:50:42.233869+00:00",
+        "state_version": 1,
+        "role": "impostor",
+        "tasks": []
+      }
+    },
+    {
+      "nickname": "Demo3",
+      "auth": "auth.ok",
+      "own_state": {
+        "type": "game.started",
+        "game_id": "f69f8224-4554-4bef-86fc-f0af3ddbe08c",
+        "room_code": "CWG92H",
+        "started_at": "2026-11-12T06:50:42.233869+00:00",
+        "state_version": 1,
+        "role": "crew",
+        "tasks": []
+      }
+    }
+  ],
+  "reconnect_same_own_state": true,
+  "public_payloads_have_no_secrets": true
+}
