@@ -20,7 +20,7 @@ class RoomSerializer(serializers.ModelSerializer):
         fields = ["id", "code", "status", "min_players", "max_players", "host_player_id", "players", "created_at"]
 
     def get_players(self, room: Room):
-        memberships = room.memberships.select_related("player").order_by("joined_at")
+        memberships = room.memberships.select_related("player").order_by("joined_at", "id")
         return [{
             "id": str(m.player_id),
             "nickname": m.player.nickname,

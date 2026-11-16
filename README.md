@@ -14,7 +14,7 @@ Original multiplayer 2D social-deduction game. Backend foundation: **Django 5.2 
 
 ## Endpoints / architecture
 - `POST /api/v1/guests/` — create signed 24-hour guest identity.
-- `POST /api/v1/rooms/`, `POST /api/v1/rooms/join/`, `GET /api/v1/rooms/<code>/`, `POST /api/v1/rooms/<code>/leave/` — initial working room CRUD; no game logic.
+- `POST /api/v1/rooms/`, `POST /api/v1/rooms/join/`, `GET /api/v1/rooms/<code>/`, `POST /api/v1/rooms/<code>/leave/` — guest-authenticated lobby. A guest may host multiple independent waiting rooms. Rejoining is idempotent and the last player leaving deletes the lobby. Guest creation is limited to 10 requests/minute per peer IP per cache.
 - `POST /api/v1/games/<code>/start/` — **501 until Iliyar implements game rules**.
 - `ws(s)://host/ws/rooms/<code>/` — initial authentication and lobby snapshot; game commands still **NOT_IMPLEMENTED**.
 - `GET /api/v1/health/` — service health.
@@ -23,6 +23,8 @@ Original multiplayer 2D social-deduction game. Backend foundation: **Django 5.2 
 - Kutman — branch `feature/kutman-rooms-api`: `players/`, `rooms/`, room REST/database/security
 - Iliyar — branch `feature/iliyar-game-engine`: `game/`, WebSocket/events/match state/rules/tests
 - Shared: `config/` and cross-app model interfaces only with coordinated review.
+
+`rooms.signals.lobby_changed` sends `room_code` after a successful join or leave commits. A receiver should reload the public lobby state and handle a missing room after the last departure.
 
 Read the API contract in the frontend repository `docs/API-CONTRACT.md` and the backend `docs/ARCHITECTURE.md` before implementing features. Start from `main`, push only to your own feature branch and open a PR after tests/review. No PRs are pre-opened.
 
