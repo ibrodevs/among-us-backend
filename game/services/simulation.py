@@ -736,62 +736,56 @@ def tick(code, now=None):
     events = []
     changed = False
     if game.phase == "playing":
-        for state in game.player_states.filter(
-            **({} if game.map_version == 2 else {"alive": True})
-        ):
-            if state.is_in_vent:
-                continue
+        # Collect movers once, then use a single write batch instead of one
+        # PostgreSQL UPDATE per player on every 10 Hz tick.
+        moving = [
+            state
+            for state in game.player_states.filter(
+                **({} if game.map_version == 2 else {"alive": True})
+            )
             if (
-                state.last_move_at
+                not state.is_in_vent
+                and state.last_move_at
                 and (now - state.last_move_at).total_seconds() < 0.35
                 and (state.direction_x or state.direction_y)
+            )
+        ]
+        if moving:
+            geometry = game_map(game)
+            speed = game.settings.get("speed", geometry["speed"])
+            doors = closed_doors(game, now)
+            stations = task_stations(game)
+            active_tasks = {}
+            for task in game.tasks.filter(
+                is_completed=False, started_at__isnull=False
             ):
+                active_tasks.setdefault(task.player_id, []).append(task)
+            reset_tasks = []
+            for state in moving:
+                ghost = game.map_version == 2 and not state.alive
                 state.x, state.y = move(
                     state.x,
                     state.y,
                     state.direction_x,
                     state.direction_y,
                     min(dt, 0.15),
-                    (
-                        {
-                            **game_map(game),
-                            "walls": [],
-                            "speed": game.settings.get("speed", 220),
-                        }
-                        if game.map_version == 2 and not state.alive
-                        else {
-                            **game_map(game),
-                            "speed": game.settings.get(
-                                "speed", game_map(game)["speed"]
-                            ),
-                        }
-                    ),
-                    (
-                        []
-                        if game.map_version == 2 and not state.alive
-                        else closed_doors(game, now)
-                    ),
+                    {
+                        **geometry,
+                        "speed": speed,
+                        **({"walls": []} if ghost else {}),
+                    },
+                    [] if ghost else doors,
                 )
-                state.save(update_fields=["x", "y"])
-                for task in game.tasks.filter(
-                    player_id=state.player_id,
-                    is_completed=False,
-                    started_at__isnull=False,
-                ):
-                    if not near(
-                        state,
-                        task_stations(game)[
-                            (
-                                task.extra.get("destination")
-                                if task.stage
-                                else task.task_point
-                            )
-                        ],
-                        85,
-                    ):
+                for task in active_tasks.get(state.player_id, ()):
+                    point = (
+                        task.extra.get("destination")
+                        if task.stage
+                        else task.task_point
+                    )
+                    if not near(state, stations[point], 85):
                         task.started_at = None
                         task.challenge = []
-                        task.save(update_fields=["started_at", "challenge"])
+                        reset_tasks.append(task)
                 changed = True
                 events.append(
                     {
@@ -801,6 +795,11 @@ def tick(code, now=None):
                         "y": state.y,
                         "seq": state.last_move_seq,
                     }
+                )
+            PlayerGameState.objects.bulk_update(moving, ["x", "y"], batch_size=20)
+            if reset_tasks:
+                TaskAssignment.objects.bulk_update(
+                    reset_tasks, ["started_at", "challenge"], batch_size=100
                 )
     elif game.phase == "meeting":
         meeting = game.meetings.get(finished_at__isnull=True)
