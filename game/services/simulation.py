@@ -411,7 +411,14 @@ def command(code, player_id, payload, now=None):
     if game.map_version == 2:
         from game.v2 import handle_command, advance_world
 
-        if advance_world(game, room, now) and game.phase == "finished":
+        # High-frequency input only changes intent; the mandatory clock advances
+        # deadlines/abilities once per tick instead of rescanning 20 actors for
+        # every movement packet. Other actions still settle deadlines first.
+        if (
+            kind != "player.move"
+            and advance_world(game, room, now)
+            and game.phase == "finished"
+        ):
             game.state_version += 1
             game.save()
             return [], public_snapshot(game, now), private_snapshot(game, player_id)
