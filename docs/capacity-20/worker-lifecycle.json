@@ -1,0 +1,6 @@
+{
+  "standby_leader": false,
+  "sigterm_exit_code": 0,
+  "heartbeat_removed": true,
+  "output": "CREWMATE X game clock started (10 Hz)\nCREWMATE X game clock stopped cleanly\n"
+}
