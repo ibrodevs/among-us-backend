@@ -453,3 +453,86 @@ class AsterionTests(TestCase):
         )
         with self.assertRaises(RuleError):
             self.action(self.imp, "terminal.use", terminal_id="security")
+
+    def test_meeting_does_not_publish_former_tunnel_coordinates(self):
+        self.imp.is_in_vent = True
+        self.imp.current_vent_id = "vent-power"
+        self.imp.x, self.imp.y = 1790, 1385
+        self.imp.save()
+        self.crew.x, self.crew.y = 2930, 1970
+        self.crew.save()
+        _, snapshot, _ = self.action(self.crew, "meeting.call")
+        self.game.refresh_from_db()
+        view = public_snapshot(self.game, viewer_id=self.crew.player_id)
+        spawn_positions = {(p["x"], p["y"]) for p in game_map(self.game)["spawns"]}
+        self.assertTrue(
+            all((p["x"], p["y"]) in spawn_positions for p in view["players"])
+        )
+        self.imp.refresh_from_db()
+        self.assertFalse(self.imp.is_in_vent)
+        self.assertNotEqual((self.imp.x, self.imp.y), (1790, 1385))
+
+    def test_multistage_task_requires_destination_and_new_attempt(self):
+        from game.services.simulation import progress
+
+        points = game_map(self.game)["tasks"]
+        origin = next(p for p in points if p["type"] == "upload")
+        destination = next(
+            p
+            for p in points
+            if p["room_id"] == "comms" and p["point"] != origin["point"]
+        )
+        task = self.game.tasks.filter(player_id=self.crew.player_id).first()
+        task.task_type, task.stage, task.stage_total = "upload", 0, 2
+        task.task_point, task.extra = origin["point"], {
+            "destination": destination["point"]
+        }
+        task.save()
+        self.crew.x, self.crew.y = origin["x"], origin["y"]
+        self.crew.save()
+        before = progress(self.game)
+        self.action(self.crew, "task.begin", task_id=str(task.pk))
+        task.refresh_from_db()
+        solution = task.challenge
+        self.now += timedelta(seconds=9)
+        self.action(self.crew, "task.complete", task_id=str(task.pk), solution=solution)
+        task.refresh_from_db()
+        self.assertEqual(task.stage, 1)
+        self.assertFalse(task.is_completed)
+        self.assertEqual(progress(self.game), before)
+        with self.assertRaises(RuleError) as error:
+            self.action(self.crew, "task.begin", task_id=str(task.pk))
+        self.assertEqual(error.exception.code, "OUT_OF_RANGE")
+        self.crew.refresh_from_db()
+        self.crew.x, self.crew.y = destination["x"], destination["y"]
+        self.crew.save()
+        self.action(self.crew, "task.begin", task_id=str(task.pk))
+        task.refresh_from_db()
+        self.now += timedelta(seconds=9)
+        self.action(
+            self.crew, "task.complete", task_id=str(task.pk), solution=task.challenge
+        )
+        task.refresh_from_db()
+        self.assertTrue(task.is_completed)
+        self.assertEqual(progress(self.game)[0], before[0] + 1)
+
+    def test_medic_terminal_permission_and_reopen_cooldown(self):
+        self.game.settings["special_roles"] = True
+        self.game.save()
+        terminal = next(
+            t for t in game_map(self.game)["terminals"] if t["type"] == "vitals"
+        )
+        self.crew.x, self.crew.y = terminal["x"], terminal["y"]
+        self.crew.special_role = "tracker"
+        self.crew.save()
+        with self.assertRaises(RuleError):
+            self.action(self.crew, "terminal.use", terminal_id=terminal["id"])
+        self.crew.special_role = "medic"
+        self.crew.save()
+        self.action(self.crew, "terminal.use", terminal_id=terminal["id"])
+        self.action(self.crew, "terminal.use", terminal_id="")
+        with self.assertRaises(RuleError) as error:
+            self.action(self.crew, "terminal.use", terminal_id=terminal["id"])
+        self.assertEqual(error.exception.code, "COOLDOWN")
+        self.now += timedelta(seconds=5)
+        self.action(self.crew, "terminal.use", terminal_id=terminal["id"])

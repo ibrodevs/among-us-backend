@@ -121,6 +121,7 @@ def enrich_public(game, data, viewer_id, now):
     observer = next((s for s in states if str(s.player_id) == str(viewer_id)), None)
     data.update(
         protocol_version=2,
+        started_at=iso(game.started_at),
         map_id="asterion",
         map_version=2,
         map_mode=game.map_mode,
@@ -420,9 +421,42 @@ def enrich_private(game, state, data):
                 ),
                 game_map(game)["cameras"][0],
             )
+            camera_walls = [*game_map(game)["walls"], *closed_doors(game, now)]
+
+            def camera_visible(point):
+                return math.hypot(
+                    point["x"] - camera["x"], point["y"] - camera["y"]
+                ) <= camera["radius"] and not any(
+                    segment_hits(camera, point, wall) for wall in camera_walls
+                )
+
             data["observation"] = dict(
                 type="cameras",
                 camera=camera,
+                bodies=[
+                    dict(
+                        id=str(body.pk),
+                        player_id=str(body.player_id),
+                        x=body.x,
+                        y=body.y,
+                        color=next(
+                            (
+                                p.color
+                                for p in observation_states
+                                if p.player_id == body.player_id
+                            ),
+                            0,
+                        ),
+                    )
+                    for body in game.corpses.filter(reported_at__isnull=True)
+                    if camera_visible({"x": body.x, "y": body.y})
+                ],
+                effects=[
+                    effect
+                    for effect in game.effects
+                    if (now - date(effect["at"])).total_seconds() < 2
+                    and camera_visible(effect)
+                ],
                 players=[
                     dict(
                         id=appearance_id(game, p),
@@ -434,12 +468,7 @@ def enrich_private(game, state, data):
                     for p in observation_states
                     if p.alive
                     and not p.is_in_vent
-                    and math.hypot(p.x - camera["x"], p.y - camera["y"])
-                    <= camera["radius"]
-                    and not any(
-                        segment_hits(camera, {"x": p.x, "y": p.y}, wall)
-                        for wall in [*game_map(game)["walls"], *closed_doors(game, now)]
-                    )
+                    and camera_visible({"x": p.x, "y": p.y})
                 ],
             )
     return data
@@ -940,6 +969,17 @@ def handle_command(game, room, state, payload, now):
             require(
                 not game.settings.get("special_roles") or state.special_role == "medic"
             )
+        if (
+            terminal["type"] == "vitals"
+            and game.settings.get("special_roles")
+            and state.observing != terminal["id"]
+        ):
+            require(
+                state.ability_available_at is None or now >= state.ability_available_at,
+                "COOLDOWN",
+                "Медицинский терминал обновляется",
+            )
+            state.ability_available_at = now + timedelta(seconds=5)
         if payload.get("camera_id"):
             require(
                 payload["camera_id"] in [c["id"] for c in game_map(game)["cameras"]],

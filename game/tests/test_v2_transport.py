@@ -102,6 +102,35 @@ class AsterionSocketTests(TransactionTestCase):
             await crew.disconnect()
             await other.disconnect()
 
+    async def test_public_and_private_snapshot_share_one_database_version(self):
+        from game.consumers import RoomConsumer
+        from game.services.simulation import public_snapshot as real_snapshot
+
+        def write_death():
+            close_old_connections()
+            try:
+                from game.models import PlayerGameState
+
+                PlayerGameState.objects.filter(pk=self.crew.pk).update(alive=False)
+            finally:
+                connection.close()
+
+        def between_reads(game, **kwargs):
+            data = real_snapshot(game, **kwargs)
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                pool.submit(write_death).result(timeout=10)
+            return data
+
+        consumer = RoomConsumer()
+        consumer.room_code = self.room.code
+        consumer.player_id = str(self.crew.player_id)
+        with patch("game.consumers.public_snapshot", side_effect=between_reads):
+            public, own = await consumer._game_state()
+        self.assertTrue(
+            next(p for p in public["players"] if p["id"] == consumer.player_id)["alive"]
+        )
+        self.assertTrue(own["alive"])
+
 
 @override_settings(CHANNEL_LAYERS=MEMORY_CHANNEL_LAYERS)
 @skipUnlessDBFeature("has_select_for_update")

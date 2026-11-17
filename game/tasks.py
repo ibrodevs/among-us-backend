@@ -162,11 +162,14 @@ def assign_tasks(game, player_ids):
                 used.add(t["point"])
         for t in selected:
             definition = CATALOG[t["type"]]
+            destination_room = {"upload": "comms", "sample_analysis": "medical"}.get(
+                t["type"]
+            )
             destination = next(
                 (
                     q
-                    for q in available
-                    if q["room_id"] != t["room_id"] and q["point"] not in used
+                    for q in sorted(available, key=lambda q: q["point"] in used)
+                    if q["room_id"] == destination_room and q["point"] != t["point"]
                 ),
                 t,
             )

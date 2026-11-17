@@ -353,7 +353,8 @@
             "meeting.chat.message",
             "ability.result",
             "player.ghost",
-            "game.settings"
+            "game.settings",
+            "sabotage.failed"
           ]
         },
         "protocol_version": {

@@ -15,7 +15,7 @@ from game.services.transport import publish_update
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from django.db import DatabaseError
+from django.db import DatabaseError, transaction, connection
 from rest_framework.exceptions import AuthenticationFailed
 
 from game.services.events import TRANSPORT_ERRORS, player_group, room_group
@@ -223,16 +223,23 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def _game_state(self):
-        get_member_room(self.room_code, self.player_id)
-        game = GameSession.objects.filter(room__code=self.room_code).first()
-        return (
-            (
-                public_snapshot(game, viewer_id=self.player_id),
-                private_snapshot(game, self.player_id),
+        nested = connection.in_atomic_block
+        with transaction.atomic():
+            if connection.vendor == "postgresql" and not nested:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY"
+                    )
+            get_member_room(self.room_code, self.player_id)
+            game = GameSession.objects.filter(room__code=self.room_code).first()
+            return (
+                (
+                    public_snapshot(game, viewer_id=self.player_id),
+                    private_snapshot(game, self.player_id),
+                )
+                if game
+                else (None, None)
             )
-            if game
-            else (None, None)
-        )
 
     async def _send_game_state(self):
         try:

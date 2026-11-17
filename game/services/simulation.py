@@ -100,6 +100,21 @@ def start_meeting(game, room, state, now, corpse=None):
     game.player_states.update(direction_x=0, direction_y=0)
     if game.map_version == 2:
         game.player_states.update(is_in_vent=False, current_vent_id="", observing="")
+        # Meeting positions are public. Never expose a previously hidden tunnel
+        # destination by reusing the exploration coordinates in the roster view.
+        for index, participant in enumerate(game.player_states.order_by("player_id")):
+            spawn = game_map(game)["spawns"][index]
+            participant.x, participant.y = spawn["x"], spawn["y"]
+            participant.vent_transition_started_at = None
+            participant.ability_state = {
+                key: value
+                for key, value in participant.ability_state.items()
+                if key not in ["mimic_until", "mimic_target"]
+            }
+            participant.ability_state["appearance_epoch"] = secrets.token_hex(12)
+            participant.save(
+                update_fields=["x", "y", "vent_transition_started_at", "ability_state"]
+            )
         game.sabotages.filter(
             kind__in=["reactor", "oxygen"], status__in=["active", "repairing"]
         ).update(status="resolved", resolved_at=now)

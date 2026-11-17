@@ -41,3 +41,5 @@ The updated backend main was audited at `6d89208` (previous gameplay work merged
 Python: `venv/bin/python` (3.12). Database: PostgreSQL on 55432, Redis on 56379. Use local-only development environment variables; never commit `.env` or guest tokens. Run migrations, then Daphne on 8000 and `manage.py run_game_worker`. Frontend serves on 3000; `/demo/asterion` explores the map without a match. Real matches need four independent guest sessions.
 
 Historical v1 reports in the workspace are not evidence of v2 acceptance. Update this ledger with measured results; do not mark unrun checks as passed.
+
+Latest hardening: repeatable-read observer snapshots, meeting-safe positions and fresh appearance aliases, camera corpse/effect visibility, Medic cooldown, multi-stage destination validation. All 99 server tests pass on local PostgreSQL/Redis.

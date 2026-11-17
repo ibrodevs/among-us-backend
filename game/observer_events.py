@@ -28,7 +28,15 @@ def changes(previous, public, previous_own, own):
                 }
             )
     for key in old.keys() - current.keys():
-        events.append({"type": "sabotage.resolved", "sabotage_id": key})
+        failed = (public.get("result") or {}).get("reason") == old[key][
+            "kind"
+        ] + "_timeout"
+        events.append(
+            {
+                "type": "sabotage.failed" if failed else "sabotage.resolved",
+                "sabotage_id": key,
+            }
+        )
     if previous_own is None or any(
         previous_own.get(key) != own.get(key)
         for key in ["is_in_vent", "current_vent_id", "vent_connections"]

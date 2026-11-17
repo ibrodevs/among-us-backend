@@ -1,10 +1,10 @@
 Creating test database for alias 'default'...
 ................................Start notification unavailable; clients can recover through authenticated reconnect
-...............................................................
+...................................................................
 ----------------------------------------------------------------------
-Ran 95 tests in 4.490s
+Ran 99 tests in 5.329s
 
 OK
 Destroying test database for alias 'default'...
-Found 95 test(s).
+Found 99 test(s).
 System check identified no issues (0 silenced).
