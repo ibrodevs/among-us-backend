@@ -38,7 +38,14 @@ def closed_doors(game, now=None):
     now = now or timezone.now()
     if game.map_version == 1:
         return []
-    ids = set(game.doors.filter(closed_until__gt=now).values_list("door_id", flat=True))
+    ctx = getattr(game, "_frame", None)
+    ids = (
+        {d.door_id for d in ctx["doors"] if d.closed_until > now}
+        if ctx is not None
+        else set(
+            game.doors.filter(closed_until__gt=now).values_list("door_id", flat=True)
+        )
+    )
     return [
         d["bounds"]
         for d in game_map(game)["doors"]

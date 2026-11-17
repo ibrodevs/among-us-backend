@@ -72,7 +72,7 @@ class SettingsAndAppearanceTests(TestCase):
             ).status_code,
             400,
         )
-        self.room.settings = {"map_version": 2}
+        self.room.settings = {"map_version": 2, "impostor_count": 1}
         self.room.save()
         with patch("game.services.start.publish_start"):
             start_game(code=self.room.code, player=self.players[0])

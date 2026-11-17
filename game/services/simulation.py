@@ -1,3 +1,6 @@
+from game import metrics
+from game.services.roles import spawn_points
+
 """Authoritative actions and clock. Every writer locks Room, then Game.
 
 A durable 10 Hz worker owns elapsed time; browsers submit directions only.
@@ -50,6 +53,15 @@ def near(state, point, radius):
 
 
 def progress(game):
+    ctx = getattr(game, "_frame", None)
+    if ctx is not None:
+        obligated = {
+            s.player_id
+            for s in ctx["states"]
+            if s.role == "crew" and (s.alive or game.settings.get("ghost_tasks", True))
+        } & ctx["members"]
+        tasks = [t for t in ctx["tasks"] if t.player_id in obligated]
+        return sum(t.is_completed for t in tasks), len(tasks)
     # Dead crew cannot perform tasks: their outstanding obligations are retired.
     living = game.player_states.filter(
         role="crew",
@@ -111,7 +123,7 @@ def start_meeting(game, room, state, now, corpse=None):
         # Meeting positions are public. Never expose a previously hidden tunnel
         # destination by reusing the exploration coordinates in the roster view.
         for index, participant in enumerate(game.player_states.order_by("player_id")):
-            spawn = game_map(game)["spawns"][index]
+            spawn = spawn_points(game)[index]
             participant.x, participant.y = spawn["x"], spawn["y"]
             participant.vent_transition_started_at = None
             participant.ability_state = {
@@ -186,8 +198,15 @@ def finish_vote(game, room, meeting, now):
 def public_snapshot(game, now=None, viewer_id=None):
     now = now or timezone.now()
     completed, total = progress(game)
+    ctx = getattr(game, "_frame", None)
     meeting = (
-        game.meetings.filter(finished_at__isnull=True).order_by("-number").first()
+        (
+            ctx["meeting"]
+            if ctx is not None
+            else game.meetings.filter(finished_at__isnull=True)
+            .order_by("-number")
+            .first()
+        )
         if game.phase == "meeting"
         else None
     )
@@ -243,8 +262,14 @@ def public_snapshot(game, now=None, viewer_id=None):
                     else meeting.voting_ends_at
                 )
             ).isoformat(),
-            "votes_cast": meeting.votes.count(),
-            "alive_voters": game.player_states.filter(alive=True).count(),
+            "votes_cast": (
+                len(ctx["votes"]) if ctx is not None else meeting.votes.count()
+            ),
+            "alive_voters": (
+                sum(s.alive for s in ctx["states"])
+                if ctx is not None
+                else game.player_states.filter(alive=True).count()
+            ),
             "result": meeting.result,
             **(
                 {
@@ -253,7 +278,9 @@ def public_snapshot(game, now=None, viewer_id=None):
                             "voter_id": str(v.voter_id),
                             "target_id": str(v.target_id) if v.target_id else None,
                         }
-                        for v in meeting.votes.all()
+                        for v in (
+                            ctx["votes"] if ctx is not None else meeting.votes.all()
+                        )
                     ]
                 }
                 if game.map_version == 2
@@ -267,7 +294,11 @@ def public_snapshot(game, now=None, viewer_id=None):
             "reason": game.finish_reason,
             "players_with_roles": [
                 {"id": str(s.player_id), "nickname": s.player.nickname, "role": s.role}
-                for s in game.player_states.select_related("player")
+                for s in (
+                    ctx["states"]
+                    if ctx is not None
+                    else game.player_states.select_related("player")
+                )
             ],
         }
     if game.map_version == 2:
@@ -278,17 +309,30 @@ def public_snapshot(game, now=None, viewer_id=None):
 
 
 def private_snapshot(game, player_id):
+    ctx = getattr(game, "_frame", None)
     state = next(
         (
             s
-            for s in getattr(game, "_snapshot_states", [])
+            for s in (
+                ctx["states"]
+                if ctx is not None
+                else getattr(game, "_snapshot_states", [])
+            )
             if str(s.player_id) == str(player_id)
         ),
         None,
     ) or game.player_states.get(player_id=player_id)
-    task_models = list(game.tasks.filter(player_id=player_id).order_by("task_point"))
+    task_models = (
+        [t for t in ctx["tasks"] if str(t.player_id) == str(player_id)]
+        if ctx is not None
+        else list(game.tasks.filter(player_id=player_id).order_by("task_point"))
+    )
     meeting = (
-        game.meetings.filter(finished_at__isnull=True).first()
+        (
+            ctx["meeting"]
+            if ctx is not None
+            else game.meetings.filter(finished_at__isnull=True).first()
+        )
         if game.phase == "meeting"
         else None
     )
@@ -305,7 +349,12 @@ def private_snapshot(game, player_id):
         ),
         "emergency_used": state.emergency_used,
         "has_voted": bool(
-            meeting and meeting.votes.filter(voter_id=player_id).exists()
+            meeting
+            and (
+                any(str(v.voter_id) == str(player_id) for v in ctx["votes"])
+                if ctx is not None
+                else meeting.votes.filter(voter_id=player_id).exists()
+            )
         ),
         "tasks": [
             {
@@ -330,6 +379,7 @@ def private_snapshot(game, player_id):
     return data
 
 
+@metrics.timed("command_processing_ms")
 @transaction.atomic
 def command(code, player_id, payload, now=None):
     now = now or timezone.now()
@@ -729,8 +779,8 @@ def tick(code, now=None):
                 game.corpses.filter(reported_at__isnull=True).update(reported_at=now)
                 for index, state in enumerate(game.player_states.order_by("player_id")):
                     state.x, state.y = (
-                        game_map(game)["spawns"][index]["x"],
-                        game_map(game)["spawns"][index]["y"],
+                        spawn_points(game)[index]["x"],
+                        spawn_points(game)[index]["y"],
                     )
                     state.kill_available_at = now + timedelta(
                         seconds=game.settings.get("kill_cooldown", 25)

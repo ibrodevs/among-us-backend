@@ -117,7 +117,12 @@ def record_effect(game, kind, state, now, **extra):
 
 
 def enrich_public(game, data, viewer_id, now):
-    states = list(game.player_states.select_related("player").order_by("player_id"))
+    ctx = getattr(game, "_frame", None)
+    states = (
+        ctx["states"]
+        if ctx is not None
+        else list(game.player_states.select_related("player").order_by("player_id"))
+    )
     if getattr(game, "_snapshot_share", False):
         game._snapshot_states = states
     observer = next((s for s in states if str(s.player_id) == str(viewer_id)), None)
@@ -133,10 +138,18 @@ def enrich_public(game, data, viewer_id, now):
             for s in states
         ],
     )
-    locked = set(
-        game.doors.filter(closed_until__gt=now).values_list("door_id", flat=True)
+    locked = (
+        {d.door_id for d in ctx["doors"] if d.closed_until > now}
+        if ctx is not None
+        else set(
+            game.doors.filter(closed_until__gt=now).values_list("door_id", flat=True)
+        )
     )
-    incidents = list(game.sabotages.filter(status__in=["active", "repairing"]))
+    incidents = (
+        ctx["incidents"]
+        if ctx is not None
+        else list(game.sabotages.filter(status__in=["active", "repairing"]))
+    )
     if getattr(game, "_snapshot_share", False):
         game._snapshot_incidents = incidents
     lights = any(s.kind == "lights" for s in incidents)
@@ -207,7 +220,11 @@ def enrich_public(game, data, viewer_id, now):
                 y=b.y,
                 color=next((s.color for s in states if s.player_id == b.player_id), 0),
             )
-            for b in game.corpses.filter(reported_at__isnull=True)
+            for b in (
+                [b for b in ctx["corpses"] if b.reported_at is None]
+                if ctx is not None
+                else game.corpses.filter(reported_at__isnull=True)
+            )
             if visible(
                 game,
                 observer,
@@ -275,7 +292,11 @@ def enrich_public(game, data, viewer_id, now):
         )
     )
     if data["meeting"] and observer:
-        meeting = game.meetings.filter(finished_at__isnull=True).first()
+        meeting = (
+            ctx["meeting"]
+            if ctx is not None
+            else game.meetings.filter(finished_at__isnull=True).first()
+        )
         data["meeting"]["messages"] = [
             dict(
                 id=str(m.pk),
@@ -285,9 +306,15 @@ def enrich_public(game, data, viewer_id, now):
                 at=iso(m.created_at),
                 ghost=m.ghost_channel,
             )
-            for m in meeting.messages.filter(ghost_channel=not observer.alive)
-            .select_related("player")
-            .order_by("-created_at")[:50]
+            for m in (
+                [m for m in ctx["messages"] if m.ghost_channel == (not observer.alive)][
+                    :50
+                ]
+                if ctx is not None
+                else meeting.messages.filter(ghost_channel=(not observer.alive))
+                .select_related("player")
+                .order_by("-created_at")[:50]
+            )
         ][::-1]
         data["meeting"]["channel"] = "ghost" if not observer.alive else "living"
         data["meeting"]["source"] = "report" if meeting.corpse_id else "emergency"
@@ -295,6 +322,7 @@ def enrich_public(game, data, viewer_id, now):
 
 
 def enrich_private(game, state, data, task_models=None):
+    ctx = getattr(game, "_frame", None)
     now = timezone.now()
     data.update(
         protocol_version=2,
@@ -344,7 +372,11 @@ def enrich_private(game, state, data, task_models=None):
             stage_total=model.stage_total,
             category=CATALOG[model.task_type]["category"],
         )
-    incidents = getattr(game, "_snapshot_incidents", None)
+    incidents = (
+        ctx["incidents"]
+        if ctx is not None
+        else getattr(game, "_snapshot_incidents", None)
+    )
     data["communications_down"] = (
         any(s.kind == "comms" for s in incidents)
         if incidents is not None
@@ -361,9 +393,16 @@ def enrich_private(game, state, data, task_models=None):
     data["repair"] = None
     attempt = state.ability_state.get("repair")
     if attempt:
-        sabotage = game.sabotages.filter(
-            pk=attempt["sabotage_id"], status__in=["active", "repairing"]
-        ).first()
+        sabotage = (
+            next(
+                (s for s in ctx["incidents"] if str(s.pk) == attempt["sabotage_id"]),
+                None,
+            )
+            if ctx is not None
+            else game.sabotages.filter(
+                pk=attempt["sabotage_id"], status__in=["active", "repairing"]
+            ).first()
+        )
         panel = next(
             (
                 p
@@ -388,11 +427,13 @@ def enrich_private(game, state, data, task_models=None):
         and state.alive
         and not state.is_in_vent
         and math.hypot(state.x - terminal["x"], state.y - terminal["y"]) <= 100
-        and not game.sabotages.filter(
-            kind="comms", status__in=["active", "repairing"]
-        ).exists()
+        and not data["communications_down"]
     ):
-        observation_states = list(game.player_states.select_related("player"))
+        observation_states = (
+            ctx["states"]
+            if ctx is not None
+            else list(game.player_states.select_related("player"))
+        )
         if terminal["type"] == "admin":
             data["observation"] = dict(
                 type="admin",
@@ -417,13 +458,28 @@ def enrich_private(game, state, data, task_models=None):
                                 "dead"
                                 if not p.alive
                                 and (
-                                    not game.corpses.filter(
-                                        player_id=p.player_id
-                                    ).exists()
-                                    or game.corpses.filter(
-                                        player_id=p.player_id,
-                                        created_at__lt=now - timedelta(seconds=5),
-                                    ).exists()
+                                    (
+                                        not any(
+                                            b.player_id == p.player_id
+                                            for b in ctx["corpses"]
+                                        )
+                                        or any(
+                                            b.player_id == p.player_id
+                                            and b.created_at
+                                            < now - timedelta(seconds=5)
+                                            for b in ctx["corpses"]
+                                        )
+                                    )
+                                    if ctx is not None
+                                    else (
+                                        not game.corpses.filter(
+                                            player_id=p.player_id
+                                        ).exists()
+                                        or game.corpses.filter(
+                                            player_id=p.player_id,
+                                            created_at__lt=now - timedelta(seconds=5),
+                                        ).exists()
+                                    )
                                 )
                                 else "alive"
                             ),
@@ -467,7 +523,11 @@ def enrich_private(game, state, data, task_models=None):
                             0,
                         ),
                     )
-                    for body in game.corpses.filter(reported_at__isnull=True)
+                    for body in (
+                        [b for b in ctx["corpses"] if b.reported_at is None]
+                        if ctx is not None
+                        else game.corpses.filter(reported_at__isnull=True)
+                    )
                     if camera_visible({"x": body.x, "y": body.y})
                 ],
                 effects=[

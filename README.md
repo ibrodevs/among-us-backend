@@ -1,4 +1,4 @@
-# Crew Mission — Backend
+# CREWMATE X — Backend
 
 Original multiplayer 2D social-deduction game. Backend foundation: **Django 5.2 LTS, Django REST Framework, Django Channels, PostgreSQL, Redis**. Local development can use SQLite and the in-memory Channel Layer; production **must** use PostgreSQL and Redis.
 
@@ -18,8 +18,8 @@ The clock process is mandatory for movement and timers. SQLite plus the in-memor
 
 ## Endpoints / architecture
 - `POST /api/v1/guests/` — create signed 24-hour guest identity.
-- `POST /api/v1/rooms/`, `POST /api/v1/rooms/join/`, `GET /api/v1/rooms/<code>/`, `POST /api/v1/rooms/<code>/leave/` — guest-authenticated lobby with atomic capacity checks, idempotent joins, host transfer and cleanup. Guest creation is limited to 10 requests/minute per peer IP per cache.
-- `POST /api/v1/games/<code>/start/` — host-only atomic start for 4–10 members; returns the public Room DTO.
+- `POST /api/v1/rooms/`, `POST /api/v1/rooms/join/`, `GET /api/v1/rooms/<code>/`, `POST /api/v1/rooms/<code>/leave/` — guest-authenticated lobby with atomic capacity checks, idempotent joins, host transfer and cleanup. Guest creation is limited to 30 requests/minute per peer IP per cache.
+- `POST /api/v1/games/<code>/start/` — host-only atomic start for 4–20 members (minimum 4/7/10 for 1/2/3 selected impostors); returns the public Room DTO.
 - `ws(s)://host/ws/rooms/<code>/` — guest authentication, public room snapshots and private persisted role delivery, including reconnect.
 - `GET /api/v1/health/` — service health.
 
@@ -32,7 +32,7 @@ The clock process is mandatory for movement and timers. SQLite plus the in-memor
 
 Read the API contract in the frontend repository `docs/API-CONTRACT.md` and the backend `docs/ARCHITECTURE.md` before implementing features. Start from `main`, push only to your own feature branch and open a PR after tests/review. No PRs are pre-opened.
 
-**Project status:** stage A match models, start and secret roles are implemented. Movement, tasks, kills, meetings, voting and win evaluation are implemented in the separate gameplay review candidate. See [stage A setup and verification](docs/STAGE-A.md) and [WebSocket events](docs/WS-EVENTS.md).
+**Project status:** Asterion with 21 furnished rooms, tasks, vents, sabotage, meetings and 20-player rooms. The host selects 1–3 impostors. See the [self-deployment quickstart](docs/deployment/QUICKSTART.md) and [capacity verification](docs/capacity-20/README.md).
 
 
 ## Full game runtime

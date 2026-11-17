@@ -21,7 +21,7 @@ import json
 class AsterionSocketTests(TransactionTestCase):
     def setUp(self):
         self.room, self.players = make_room()
-        self.room.settings = {"map_version": 2}
+        self.room.settings = {"map_version": 2, "impostor_count": 1}
         self.room.save()
         with patch("game.services.start.publish_start"):
             start_game(code=self.room.code, player=self.players[0])
@@ -137,7 +137,7 @@ class AsterionSocketTests(TransactionTestCase):
 class AsterionRaceTests(TransactionTestCase):
     def test_parallel_critical_sabotages_commit_exactly_one(self):
         room, players = make_room(10)
-        room.settings = {"map_version": 2}
+        room.settings = {"map_version": 2, "impostor_count": 2}
         room.save()
         with patch("game.services.start.publish_start"):
             start_game(code=room.code, player=players[0])
@@ -171,7 +171,7 @@ class AsterionRaceTests(TransactionTestCase):
         from game.maps import task_stations
 
         room, players = make_room()
-        room.settings = {"map_version": 2}
+        room.settings = {"map_version": 2, "impostor_count": 1}
         room.save()
         with patch("game.services.start.publish_start"):
             start_game(code=room.code, player=players[0])

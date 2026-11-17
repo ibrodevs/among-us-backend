@@ -3,6 +3,7 @@
 import json
 import math
 from collections import deque
+from game.limits import MAX_PLAYERS
 from pathlib import Path
 from scripts.asterion_rooms import apply_room_definitions
 
@@ -248,7 +249,7 @@ def build():
 
     # Resolve authored interaction approaches onto a clear floor cell. The same
     # coordinate is used by art, server validation, minimap and exit placement.
-    def clear_point(room_id, target, used):
+    def clear_point(room_id, target, used, spacing=100):
         room = next(r for r in rooms if r["id"] == room_id)
         b = room["bounds"]
         candidates = []
@@ -264,7 +265,7 @@ def build():
                     for p in walls
                 ):
                     continue
-                if any(math.hypot(x - q["x"], y - q["y"]) < 100 for q in used):
+                if any(math.hypot(x - q["x"], y - q["y"]) < spacing for q in used):
                     continue
                 candidates.append(dict(x=x, y=y))
         assert candidates, room_id
@@ -343,13 +344,17 @@ def build():
         for r in rooms
     }
     spawn_points = []
-    for i in range(10):
-        angle = i * math.pi / 5
+    for i in range(MAX_PLAYERS):
+        angle = (i % 10) * math.pi / 5
         spawn_points.append(
             clear_point(
                 "nexus",
-                dict(x=2930 + 175 * math.cos(angle), y=1970 + 150 * math.sin(angle)),
+                dict(
+                    x=2930 + (175 if i < 10 else 300) * math.cos(angle),
+                    y=1970 + (150 if i < 10 else 200) * math.sin(angle),
+                ),
                 spawn_points,
+                spacing=100 if i < 10 else 48,
             )
         )
     routes = []

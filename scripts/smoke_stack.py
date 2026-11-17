@@ -44,7 +44,11 @@ async def check(base):
             guests.append(guest)
             if code is None:
                 room = await asyncio.to_thread(
-                    post, base, "/api/v1/rooms/", {"max_players": 4}, guest["token"]
+                    post,
+                    base,
+                    "/api/v1/rooms/",
+                    {"max_players": 4, "impostor_count": 1},
+                    guest["token"],
                 )
                 code = room["code"]
             else:

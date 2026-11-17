@@ -1,3 +1,4 @@
+from game.limits import PLAYER_COLORS
 from unicodedata import normalize
 
 from django.db import transaction
@@ -24,7 +25,9 @@ def create_room(request):
     serializer = RoomCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     room = create_room_for_player(
-        request.user.player, max_players=serializer.validated_data["max_players"]
+        request.user.player,
+        max_players=serializer.validated_data["max_players"],
+        impostor_count=serializer.validated_data["impostor_count"],
     )
     return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
 
@@ -45,7 +48,10 @@ def join_room(request):
                 {"detail": "Room already started"}, status=status.HTTP_409_CONFLICT
             )
         if room.memberships.count() >= room.max_players:
-            return Response({"detail": "Room is full"}, status=status.HTTP_409_CONFLICT)
+            return Response(
+                {"code": "ROOM_FULL", "detail": "Room is full"},
+                status=status.HTTP_409_CONFLICT,
+            )
         nickname = normalize("NFC", player.nickname).casefold()
         member_names = room.memberships.values_list("player__nickname", flat=True)
         if any(normalize("NFC", name).casefold() == nickname for name in member_names):
@@ -53,7 +59,9 @@ def join_room(request):
                 {"detail": "Nickname already used in this room"},
                 status=status.HTTP_409_CONFLICT,
             )
-        RoomMembership.objects.create(room=room, player=player)
+        used = set(room.memberships.exclude(color=None).values_list("color", flat=True))
+        color = next((i for i in range(PLAYER_COLORS) if i not in used), None)
+        RoomMembership.objects.create(room=room, player=player, color=color)
         notify_lobby_changed(room.code)
         return Response(RoomSerializer(room).data)
 
@@ -135,8 +143,8 @@ def room_appearance(request, code):
             color = (
                 request.data.get("color") if isinstance(request.data, dict) else None
             )
-            if type(color) is not int or not 0 <= color < 10:
-                raise ValidationError({"detail": "Choose a color from 0 to 9"})
+            if type(color) is not int or not 0 <= color < PLAYER_COLORS:
+                raise ValidationError({"detail": "Choose a color from 0 to 19"})
             if room.memberships.filter(color=color).exclude(pk=member.pk).exists():
                 return Response(
                     {"detail": "This color is already selected"}, status=409

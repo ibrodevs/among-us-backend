@@ -5,3 +5,7 @@ venv
 *.sqlite3
 __pycache__
 docs/stage-a
+
+staticfiles
+docs
+.pytest_cache

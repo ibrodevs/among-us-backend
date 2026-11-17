@@ -50,11 +50,11 @@ class StartConcurrencyTests(TransactionTestCase):
         locked = Event()
         release = Event()
 
-        def pause_with_room_locked(ids):
+        def pause_with_room_locked(ids,count):
             locked.set()
             if not release.wait(timeout=10):
                 raise RuntimeError("Test did not release start lock")
-            return assign_roles(ids)
+            return assign_roles(ids,count)
 
         with patch(
             "game.services.start.assign_roles", side_effect=pause_with_room_locked

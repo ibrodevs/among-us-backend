@@ -76,6 +76,11 @@ class RoomWebsocketTests(TransactionTestCase):
                 self.assertEqual(
                     (await self.auth(ws, index))["room"]["status"], "waiting"
                 )
+            for ws in sockets:
+                while not await ws.receive_nothing(timeout=0.03):
+                    self.assertEqual(
+                        (await ws.receive_json_from())["type"], "room.snapshot"
+                    )
             with patch.object(layer, "group_send", wraps=layer.group_send) as send:
                 await self.start()
                 for index, ws in enumerate(sockets):

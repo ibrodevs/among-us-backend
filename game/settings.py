@@ -1,8 +1,10 @@
+from game.limits import MIN_PLAYERS, MAX_PLAYERS, minimum_players
 from rest_framework.exceptions import ValidationError
 
 DEFAULTS = dict(
     map_version=2,
-    max_players=10,
+    max_players=MAX_PLAYERS,
+    impostor_count=2,
     area="auto",
     speed=220,
     discussion_seconds=30,
@@ -25,7 +27,8 @@ DEFAULTS = dict(
 )
 RANGES = {
     "map_version": (1, 2),
-    "max_players": (4, 10),
+    "max_players": (MIN_PLAYERS, MAX_PLAYERS),
+    "impostor_count": (1, 3),
     "speed": (200, 230),
     "discussion_seconds": (5, 120),
     "voting_seconds": (5, 120),
@@ -63,4 +66,10 @@ def validate_settings(data):
         <= 9
     ):
         raise ValidationError({"detail": "Choose 4–9 tasks"})
+    if result["max_players"] < minimum_players(result["impostor_count"]):
+        raise ValidationError(
+            {
+                "detail": f"Для {result['impostor_count']} предателей требуется минимум {minimum_players(result['impostor_count'])} игроков"
+            }
+        )
     return result

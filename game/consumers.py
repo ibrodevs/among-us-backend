@@ -4,6 +4,7 @@ import logging
 import time
 from datetime import timedelta
 from django.utils import timezone
+from game import metrics
 from game.models import GameSession, ConnectionLease
 from game.services.simulation import (
     command,
@@ -122,9 +123,15 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 return
             self.command_times.append(now)
             try:
+                queued = time.monotonic()
                 events, snapshot, own = await database_sync_to_async(command)(
                     self.room_code, self.player_id, content
                 )
+                metrics.record(
+                    "command_roundtrip_ms", (time.monotonic() - queued) * 1000
+                )
+                metrics.count("commands")
+                metrics.flush("api")
                 if own is not None:
                     await self.send_json(own)
                     if own.get("protocol_version") == 2:
@@ -192,9 +199,13 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 "expires_at": timezone.now() + timedelta(seconds=45),
             },
         )
-        RoomMembership.objects.filter(room=room, player=player).update(
-            is_connected=True
-        )
+        changed = RoomMembership.objects.filter(
+            room=room, player=player, is_connected=False
+        ).update(is_connected=True)
+        if changed and room.status == "waiting":
+            from rooms.services import notify_lobby_changed
+
+            notify_lobby_changed(room.code)
         return str(player.pk)
 
     @database_sync_to_async
@@ -211,9 +222,19 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
             player_id=self.player_id,
             expires_at__gt=timezone.now(),
         ).exists():
-            RoomMembership.objects.filter(
-                room__code=self.room_code, player_id=self.player_id
+            changed = RoomMembership.objects.filter(
+                room__code=self.room_code, player_id=self.player_id, is_connected=True
             ).update(is_connected=False)
+            if changed:
+                from rooms.models import Room
+
+                if not Room.objects.filter(
+                    code=self.room_code, status="waiting"
+                ).exists():
+                    return
+                from rooms.services import notify_lobby_changed
+
+                notify_lobby_changed(self.room_code)
 
     @database_sync_to_async
     def _renew_lease(self):
@@ -230,10 +251,21 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                     cursor.execute(
                         "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY"
                     )
+            game = (
+                GameSession.objects.select_related("room")
+                .filter(
+                    room__code=self.room_code,
+                    room__memberships__player_id=self.player_id,
+                )
+                .first()
+            )
+            if game and game.map_version == 2:
+                from game.services.frames import observer_frame
+
+                return observer_frame(
+                    game, self.player_id, public_snapshot, private_snapshot
+                )
             get_member_room(self.room_code, self.player_id)
-            game = GameSession.objects.filter(room__code=self.room_code).first()
-            if game is not None:
-                game._snapshot_share = True
             return (
                 (
                     public_snapshot(game, viewer_id=self.player_id),
@@ -255,6 +287,12 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                     )
                     return
                 self.last_game_version = public["state_version"]
+                metrics.record(
+                    "snapshot_bytes",
+                    len(json.dumps(public).encode()) + len(json.dumps(own).encode()),
+                )
+                metrics.count("snapshot_pairs")
+                metrics.flush("api")
                 await self.send_json(public)
                 await self.send_json(own)
                 if public.get("protocol_version") == 2:

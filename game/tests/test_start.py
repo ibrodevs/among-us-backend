@@ -85,9 +85,12 @@ class StartApiTests(TestCase):
             self.assert_waiting()
 
     def test_all_valid_roster_sizes_roles_and_spawns(self):
-        for count in range(4, 11):
+        for count in range(4, 21):
             with self.subTest(count=count):
                 room, players = make_room(count, code=f"TEST{count:02}")
+                selected = 1 if count < 7 else 2 if count < 10 else 3
+                room.settings["impostor_count"] = selected
+                room.save()
                 # Offline members are still part of the fixed match roster.
                 self.assertFalse(room.memberships.filter(is_connected=True).exists())
                 authorize(self.client, players[0])
@@ -101,12 +104,8 @@ class StartApiTests(TestCase):
                 game = GameSession.objects.get(room=room)
                 states = game.player_states.all()
                 self.assertEqual(states.count(), count)
-                self.assertEqual(
-                    states.filter(role="impostor").count(), 1 if count <= 6 else 2
-                )
-                self.assertEqual(
-                    states.filter(role="crew").count(), count - (1 if count <= 6 else 2)
-                )
+                self.assertEqual(states.filter(role="impostor").count(), selected)
+                self.assertEqual(states.filter(role="crew").count(), count - (selected))
                 self.assertEqual(
                     set(states.values_list("player_id", flat=True)),
                     {p.pk for p in players},
@@ -121,9 +120,7 @@ class StartApiTests(TestCase):
                 self.assertEqual(game.phase, "playing")
                 self.assertIsNone(game.finished_at)
                 self.assertEqual(game.state_version, 1)
-                self.assertEqual(
-                    game.tasks.count(), (count - (1 if count <= 6 else 2)) * 3
-                )
+                self.assertEqual(game.tasks.count(), (count - (selected)) * 3)
                 self.assertFalse(
                     game.tasks.filter(
                         player__game_states__game=game,
@@ -132,7 +129,7 @@ class StartApiTests(TestCase):
                 )
 
     def test_over_capacity_rejected(self):
-        for i in range(7):
+        for i in range(17):
             player = Player.objects.create(nickname=f"Extra{i}")
             RoomMembership.objects.create(room=self.room, player=player)
         authorize(self.client, self.players[0])
@@ -140,7 +137,10 @@ class StartApiTests(TestCase):
         self.assert_waiting()
 
     def test_configured_capacity_enforced(self):
-        self.room.max_players = 3
+        RoomMembership.objects.create(
+            room=self.room, player=Player.objects.create(nickname="Extra")
+        )
+        self.room.max_players = 4
         self.room.save(update_fields=["max_players"])
         authorize(self.client, self.players[0])
         self.assertEqual(self.client.post(self.url).status_code, 409)
@@ -232,6 +232,7 @@ class StartApiTests(TestCase):
             "host_player_id",
             "players",
             "created_at",
+            "settings",
         }
         for data in (
             response.json(),
@@ -241,7 +242,7 @@ class StartApiTests(TestCase):
             self.assertEqual(set(data), expected)
             for player in data["players"]:
                 self.assertEqual(
-                    set(player), {"id", "nickname", "is_host", "is_connected"}
+                    set(player), {"id", "nickname", "is_host", "is_connected","color"}
                 )
 
     def test_only_post_allowed(self):
@@ -253,7 +254,7 @@ class StartApiTests(TestCase):
         ids = [p.pk for p in self.players]
         with patch("game.services.roles.secrets.SystemRandom") as random:
             random.return_value.sample.return_value = [ids[2]]
-            roles = assign_roles(ids)
+            roles = assign_roles(ids, 1)
         random.return_value.sample.assert_called_once_with(ids, 1)
         self.assertEqual(roles[ids[2]], "impostor")
         self.assertEqual(sum(role == "crew" for role in roles.values()), 3)
