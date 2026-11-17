@@ -131,6 +131,35 @@ class AsterionSocketTests(TransactionTestCase):
         )
         self.assertTrue(own["alive"])
 
+    async def test_heartbeat_recovers_missed_final_invalidation(self):
+        ws = await self.connect_as(self.crew_token)
+        try:
+            # Drain the initial observer state/events.
+            while not await ws.receive_nothing(timeout=0.05):
+                await ws.receive_json_from()
+
+            def finish_without_broadcast():
+                from django.utils import timezone
+                from game.models import GameSession
+
+                GameSession.objects.filter(pk=self.game.pk).update(
+                    phase="finished",
+                    winner="crew",
+                    finish_reason="impostors_eliminated",
+                    finished_at=timezone.now(),
+                    state_version=self.game.state_version + 100,
+                )
+
+            await database_sync_to_async(finish_without_broadcast)()
+            await ws.send_json_to({"type": "ping"})
+            self.assertEqual((await ws.receive_json_from())["type"], "pong")
+            snapshot = await ws.receive_json_from()
+            self.assertEqual(snapshot["type"], "game.snapshot")
+            self.assertEqual(snapshot["phase"], "finished")
+            self.assertEqual(snapshot["result"]["winner"], "crew")
+        finally:
+            await ws.disconnect()
+
 
 @override_settings(CHANNEL_LAYERS=MEMORY_CHANNEL_LAYERS)
 @skipUnlessDBFeature("has_select_for_update")

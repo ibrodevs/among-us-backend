@@ -502,6 +502,29 @@ def command(code, player_id, payload, now=None):
                 available >= 1 or stopping, "RATE_LIMITED", "Слишком частые команды"
             )
             state.move_tokens = available if stopping else available - 1
+            if (
+                stopping
+                and state.last_move_at
+                and (state.direction_x or state.direction_y)
+            ):
+                # Settle the fraction of the current tick before clearing input,
+                # so short taps do not disappear between clock iterations.
+                since = max(game.last_tick_at or state.last_move_at, state.last_move_at)
+                seconds = min(0.15, max(0, (now - since).total_seconds()))
+                if (now - state.last_move_at).total_seconds() < 0.35:
+                    state.x, state.y = move(
+                        state.x,
+                        state.y,
+                        state.direction_x,
+                        state.direction_y,
+                        seconds,
+                        {
+                            **game_map(game),
+                            "speed": game.settings.get("speed", 220),
+                            **({"walls": []} if not state.alive else {}),
+                        },
+                        [] if not state.alive else closed_doors(game, now),
+                    )
             (
                 state.direction_x,
                 state.direction_y,
@@ -515,6 +538,8 @@ def command(code, player_id, payload, now=None):
                     "move_tokens",
                     "last_move_seq",
                     "last_move_at",
+                    "x",
+                    "y",
                 ]
             )
             if stopping:

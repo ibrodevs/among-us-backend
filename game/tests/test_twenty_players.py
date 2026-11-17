@@ -53,6 +53,42 @@ class TwentyPlayerTests(TestCase):
             )
         self.assertEqual(game.tasks.count(), 119)
 
+    def test_short_movement_tap_settles_before_next_clock_tick(self):
+        game = self.start()
+        actor = game.player_states.first()
+        now = timezone.now()
+        game.last_tick_at = now
+        game.save(update_fields=["last_tick_at"])
+        direction = next(
+            (dx, dy)
+            for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]
+            if not blocked(actor.x + dx * 10, actor.y + dy * 10, game_map(game))
+        )
+        command(
+            self.room.code,
+            actor.player_id,
+            {
+                "type": "player.move",
+                "seq": 1,
+                "direction": {"x": direction[0], "y": direction[1]},
+            },
+            now=now,
+        )
+        _, snapshot, own = command(
+            self.room.code,
+            actor.player_id,
+            {"type": "player.move", "seq": 2, "direction": {"x": 0, "y": 0}},
+            now=now + timedelta(milliseconds=30),
+        )
+        distance = ((own["x"] - actor.x) ** 2 + (own["y"] - actor.y) ** 2) ** 0.5
+        self.assertGreater(distance, 1)
+        self.assertLessEqual(distance, 7)
+        self.assertIsNone(snapshot)
+        tick(self.room.code, now=now + timedelta(milliseconds=150))
+        actor.refresh_from_db()
+        self.assertAlmostEqual(actor.x, own["x"])
+        self.assertAlmostEqual(actor.y, own["y"])
+
     def test_twenty_votes_and_resume_have_no_spawn_index_error(self):
         game = self.start()
         now = timezone.now()

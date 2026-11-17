@@ -113,8 +113,16 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 "ALREADY_AUTHENTICATED", "Open a new connection to authenticate again"
             )
         elif msg_type == "ping":
-            await self._renew_lease()
-            await self.send_json({"type": "pong"})
+            try:
+                await self._renew_lease()
+                await self.send_json({"type": "pong"})
+                # The bus carries disposable invalidations. Recover the latest
+                # durable state even if a final invalidation was dropped.
+                await self._send_game_state()
+            except SERVICE_ERRORS:
+                await self._error(
+                    "SERVICE_UNAVAILABLE", "Service temporarily unavailable"
+                )
         else:
             now = time.monotonic()
             self.command_times = [t for t in self.command_times if now - t < 1]
