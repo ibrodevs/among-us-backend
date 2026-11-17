@@ -227,9 +227,9 @@ class AsterionTests(TestCase):
         from game.v2 import visible
         from game.models import SabotageInstance
 
-        self.crew.x, self.crew.y = 2900, 1970
+        self.crew.x, self.crew.y = 2700, 1870
         self.crew.save()
-        self.assertTrue(visible(self.game, self.crew, {"x": 3200, "y": 1970}, self.now))
+        self.assertTrue(visible(self.game, self.crew, {"x": 3200, "y": 1870}, self.now))
         SabotageInstance.objects.create(
             game=self.game,
             kind="lights",
@@ -237,10 +237,10 @@ class AsterionTests(TestCase):
             initiator=self.imp.player,
         )
         self.assertFalse(
-            visible(self.game, self.crew, {"x": 3200, "y": 1970}, self.now)
+            visible(self.game, self.crew, {"x": 3200, "y": 1870}, self.now)
         )
         self.assertFalse(
-            visible(self.game, self.crew, {"x": 2900, "y": 1660}, self.now)
+            visible(self.game, self.crew, {"x": 2700, "y": 1660}, self.now)
         )
 
     def test_chat_separates_ghosts_and_rate_limits(self):
@@ -286,10 +286,10 @@ class AsterionTests(TestCase):
         self.action(self.crew, "terminal.use", terminal_id="")
 
     def test_kill_alias_and_wall_guard(self):
-        self.imp.x, self.imp.y = 2930, 1970
+        self.imp.x, self.imp.y = 2930, 2060
         self.imp.kill_available_at = self.now
         self.imp.save()
-        self.crew.x, self.crew.y = 2950, 1970
+        self.crew.x, self.crew.y = 2950, 2060
         self.crew.save()
         with self.assertRaises(RuleError):
             self.action(
@@ -536,3 +536,13 @@ class AsterionTests(TestCase):
         self.assertEqual(error.exception.code, "COOLDOWN")
         self.now += timedelta(seconds=5)
         self.action(self.crew, "terminal.use", terminal_id=terminal["id"])
+
+    def test_stop_acknowledges_position_even_between_clock_ticks(self):
+        self.action(self.crew, "player.move", seq=1, direction={"x": 1, "y": 0})
+        events, snapshot, own = self.action(
+            self.crew, "player.move", seq=2, direction={"x": 0, "y": 0}
+        )
+        self.assertIsNone(snapshot)
+        self.assertEqual(own["last_move_seq"], 2)
+        self.crew.refresh_from_db()
+        self.assertEqual((own["x"], own["y"]), (self.crew.x, self.crew.y))

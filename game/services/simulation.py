@@ -10,6 +10,7 @@ from collections import Counter
 from datetime import timedelta
 from uuid import UUID
 
+from django.db.models import Count, Q
 from django.db import transaction
 from django.utils import timezone
 
@@ -60,8 +61,15 @@ def progress(game):
     ).values("player_id")
     tasks = game.tasks.filter(player_id__in=living)
     if game.map_version == 2:
-        tasks = tasks.filter(player_id__in=game.room.memberships.values("player_id"))
-    return tasks.filter(is_completed=True).count(), tasks.count()
+        tasks = tasks.filter(
+            player_id__in=RoomMembership.objects.filter(room_id=game.room_id).values(
+                "player_id"
+            )
+        )
+    counts = tasks.aggregate(
+        done=Count("pk", filter=Q(is_completed=True)), total=Count("pk")
+    )
+    return counts["done"], counts["total"]
 
 
 def evaluate_win(game, room, now):
@@ -178,7 +186,11 @@ def finish_vote(game, room, meeting, now):
 def public_snapshot(game, now=None, viewer_id=None):
     now = now or timezone.now()
     completed, total = progress(game)
-    meeting = game.meetings.filter(finished_at__isnull=True).order_by("-number").first()
+    meeting = (
+        game.meetings.filter(finished_at__isnull=True).order_by("-number").first()
+        if game.phase == "meeting"
+        else None
+    )
     data = {
         "type": "game.snapshot",
         "protocol_version": 1,
@@ -194,11 +206,19 @@ def public_snapshot(game, now=None, viewer_id=None):
                 "y": s.y,
                 "alive": s.alive,
             }
-            for s in game.player_states.select_related("player").order_by("player_id")
+            for s in (
+                game.player_states.select_related("player").order_by("player_id")
+                if game.map_version == 1
+                else []
+            )
         ],
         "bodies": [
             {"id": str(c.pk), "player_id": str(c.player_id), "x": c.x, "y": c.y}
-            for c in game.corpses.filter(reported_at__isnull=True)
+            for c in (
+                game.corpses.filter(reported_at__isnull=True)
+                if game.map_version == 1
+                else []
+            )
         ],
         "tasks_completed": completed,
         "tasks_total": total,
@@ -258,8 +278,20 @@ def public_snapshot(game, now=None, viewer_id=None):
 
 
 def private_snapshot(game, player_id):
-    state = game.player_states.get(player_id=player_id)
-    meeting = game.meetings.filter(finished_at__isnull=True).first()
+    state = next(
+        (
+            s
+            for s in getattr(game, "_snapshot_states", [])
+            if str(s.player_id) == str(player_id)
+        ),
+        None,
+    ) or game.player_states.get(player_id=player_id)
+    task_models = list(game.tasks.filter(player_id=player_id).order_by("task_point"))
+    meeting = (
+        game.meetings.filter(finished_at__isnull=True).first()
+        if game.phase == "meeting"
+        else None
+    )
     data = {
         "type": "game.self",
         "protocol_version": 1,
@@ -287,14 +319,14 @@ def private_snapshot(game, player_id):
                     t.extra.get("destination") if t.stage else t.task_point, {}
                 ),
             }
-            for t in game.tasks.filter(player_id=player_id).order_by("task_point")
+            for t in task_models
         ],
     }
 
     if game.map_version == 2:
         from game.v2 import enrich_private
 
-        data = enrich_private(game, state, data)
+        data = enrich_private(game, state, data, task_models=task_models)
     return data
 
 
@@ -435,6 +467,10 @@ def command(code, player_id, payload, now=None):
                     "last_move_at",
                 ]
             )
+            if stopping:
+                game.state_version += 1
+                game.save(update_fields=["state_version"])
+                return [], None, private_snapshot(game, player_id)
             return [], None, None
         elif kind == "player.kill":
             require(state.role == "impostor")

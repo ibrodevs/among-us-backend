@@ -232,6 +232,8 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                     )
             get_member_room(self.room_code, self.player_id)
             game = GameSession.objects.filter(room__code=self.room_code).first()
+            if game is not None:
+                game._snapshot_share = True
             return (
                 (
                     public_snapshot(game, viewer_id=self.player_id),

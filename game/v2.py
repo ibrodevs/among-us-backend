@@ -118,6 +118,8 @@ def record_effect(game, kind, state, now, **extra):
 
 def enrich_public(game, data, viewer_id, now):
     states = list(game.player_states.select_related("player").order_by("player_id"))
+    if getattr(game, "_snapshot_share", False):
+        game._snapshot_states = states
     observer = next((s for s in states if str(s.player_id) == str(viewer_id)), None)
     data.update(
         protocol_version=2,
@@ -134,10 +136,18 @@ def enrich_public(game, data, viewer_id, now):
     locked = set(
         game.doors.filter(closed_until__gt=now).values_list("door_id", flat=True)
     )
-    lights = game.sabotages.filter(
-        kind="lights", status__in=["active", "repairing"]
-    ).exists()
-    blockers = [*game_map(game)["walls"], *closed_doors(game, now)]
+    incidents = list(game.sabotages.filter(status__in=["active", "repairing"]))
+    if getattr(game, "_snapshot_share", False):
+        game._snapshot_incidents = incidents
+    lights = any(s.kind == "lights" for s in incidents)
+    blockers = [
+        *game_map(game)["walls"],
+        *[
+            d["bounds"]
+            for d in game_map(game)["doors"]
+            if d["id"] in locked or (game.map_mode == "compact" and not d["compact"])
+        ],
+    ]
     data["players"] = []
     data["bodies"] = []
     if observer:
@@ -242,7 +252,7 @@ def enrich_public(game, data, viewer_id, now):
                 key for key, value in s.repairs.items() if value.get("done")
             ],
         )
-        for s in game.sabotages.filter(status__in=["active", "repairing"])
+        for s in incidents
     ]
     data["effects"] = [
         e
@@ -284,7 +294,7 @@ def enrich_public(game, data, viewer_id, now):
     return data
 
 
-def enrich_private(game, state, data):
+def enrich_private(game, state, data, task_models=None):
     now = timezone.now()
     data.update(
         protocol_version=2,
@@ -321,7 +331,11 @@ def enrich_private(game, state, data):
     )
     for t, model in zip(
         data["tasks"],
-        game.tasks.filter(player_id=state.player_id).order_by("task_point"),
+        (
+            task_models
+            if task_models is not None
+            else game.tasks.filter(player_id=state.player_id).order_by("task_point")
+        ),
     ):
         t.update(
             title=CATALOG[model.task_type]["title"],
@@ -330,9 +344,14 @@ def enrich_private(game, state, data):
             stage_total=model.stage_total,
             category=CATALOG[model.task_type]["category"],
         )
-    data["communications_down"] = game.sabotages.filter(
-        kind="comms", status__in=["active", "repairing"]
-    ).exists()
+    incidents = getattr(game, "_snapshot_incidents", None)
+    data["communications_down"] = (
+        any(s.kind == "comms" for s in incidents)
+        if incidents is not None
+        else game.sabotages.filter(
+            kind="comms", status__in=["active", "repairing"]
+        ).exists()
+    )
     if data["communications_down"]:
         data["tasks"] = []
     data["ability_state"] = dict(state.ability_state)

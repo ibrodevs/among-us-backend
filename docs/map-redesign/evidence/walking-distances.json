@@ -1,0 +1,178 @@
+[
+  {
+    "mode": "compact",
+    "speed": 220,
+    "method": "40-unit collision grid, Manhattan shortest paths; no player/input/network delay; open dynamic doors",
+    "nexus_to_critical_seconds": {
+      "reactor-0": 9.45,
+      "reactor-1": 7.64,
+      "oxygen-0": 9.27,
+      "oxygen-1": 7.64,
+      "lights-0": 9.45,
+      "comms-0": 7.64
+    },
+    "max_room_anchor_to_task_seconds": 18.36,
+    "adjacent_sector_routes": [
+      {
+        "rooms": [
+          "power",
+          "security"
+        ],
+        "seconds": 5.09
+      },
+      {
+        "rooms": [
+          "cooling",
+          "nexus"
+        ],
+        "seconds": 5.45
+      },
+      {
+        "rooms": [
+          "cooling",
+          "medical"
+        ],
+        "seconds": 4.0
+      },
+      {
+        "rooms": [
+          "security",
+          "nexus"
+        ],
+        "seconds": 4.0
+      },
+      {
+        "rooms": [
+          "observatory",
+          "cargo"
+        ],
+        "seconds": 3.27
+      },
+      {
+        "rooms": [
+          "biodome",
+          "transit"
+        ],
+        "seconds": 5.27
+      },
+      {
+        "rooms": [
+          "nexus",
+          "cargo"
+        ],
+        "seconds": 5.64
+      },
+      {
+        "rooms": [
+          "nexus",
+          "biodome"
+        ],
+        "seconds": 5.82
+      }
+    ],
+    "reachable_terminals": 16,
+    "rooms": 9
+  },
+  {
+    "mode": "full",
+    "speed": 220,
+    "method": "40-unit collision grid, Manhattan shortest paths; no player/input/network delay; open dynamic doors",
+    "nexus_to_critical_seconds": {
+      "reactor-0": 9.45,
+      "reactor-1": 7.64,
+      "oxygen-0": 9.27,
+      "oxygen-1": 7.64,
+      "lights-0": 9.45,
+      "comms-0": 7.64
+    },
+    "max_room_anchor_to_task_seconds": 29.27,
+    "adjacent_sector_routes": [
+      {
+        "rooms": [
+          "power",
+          "security"
+        ],
+        "seconds": 5.09
+      },
+      {
+        "rooms": [
+          "cooling",
+          "nexus"
+        ],
+        "seconds": 5.45
+      },
+      {
+        "rooms": [
+          "cooling",
+          "medical"
+        ],
+        "seconds": 4.0
+      },
+      {
+        "rooms": [
+          "maintenance",
+          "medical"
+        ],
+        "seconds": 5.45
+      },
+      {
+        "rooms": [
+          "bridge",
+          "power"
+        ],
+        "seconds": 4.18
+      },
+      {
+        "rooms": [
+          "security",
+          "nexus"
+        ],
+        "seconds": 4.0
+      },
+      {
+        "rooms": [
+          "observatory",
+          "storage"
+        ],
+        "seconds": 5.09
+      },
+      {
+        "rooms": [
+          "observatory",
+          "cargo"
+        ],
+        "seconds": 3.27
+      },
+      {
+        "rooms": [
+          "biodome",
+          "transit"
+        ],
+        "seconds": 5.27
+      },
+      {
+        "rooms": [
+          "transit",
+          "quarters"
+        ],
+        "seconds": 3.45
+      },
+      {
+        "rooms": [
+          "nexus",
+          "cargo"
+        ],
+        "seconds": 5.64
+      },
+      {
+        "rooms": [
+          "nexus",
+          "biodome"
+        ],
+        "seconds": 5.82
+      }
+    ],
+    "reachable_terminals": 40,
+    "rooms": 21
+  }
+]
