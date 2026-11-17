@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -78,8 +79,23 @@ DATABASES = {
 
 if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
     DATABASES["default"]["OPTIONS"] = {
-        "pool": {"min_size": 2, "max_size": 16, "timeout": 5}
+        **DATABASES["default"].get("OPTIONS", {}),
+        "pool": {
+            "min_size": int(os.getenv("DB_POOL_MIN", "1")),
+            "max_size": int(os.getenv("DB_POOL_MAX", "8")),
+            "timeout": 5,
+        },
     }
+
+    if os.getenv("DATABASE_REQUIRE_TLS", str(not DEBUG)).lower() == "true":
+        options = DATABASES["default"]["OPTIONS"]
+        supplied = options.get("sslmode")
+        if supplied in ["disable", "allow", "prefer"]:
+            raise ImproperlyConfigured("External PostgreSQL requires TLS")
+        options["sslmode"] = supplied or "require"
+        if os.getenv("DATABASE_SSLROOTCERT"):
+            options["sslrootcert"] = os.environ["DATABASE_SSLROOTCERT"]
+            options["sslmode"] = "verify-full"
 
 REDIS_URL = os.getenv("REDIS_URL", "").strip()
 if not DEBUG and not REDIS_URL:
@@ -89,13 +105,15 @@ CHANNEL_LAYERS = {
         {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
             "CONFIG": {
+                "capacity": 30,
+                "expiry": 5,
                 "hosts": [
                     {
                         "address": REDIS_URL,
                         "socket_timeout": 10,
                         "socket_connect_timeout": 5,
                     }
-                ]
+                ],
             },
         }
         if REDIS_URL
@@ -113,6 +131,14 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
+}
+SECURE_REDIRECT_EXEMPT = [r"^api/v1/health/$", r"^api/v1/ready/$"]
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Production must fail closed rather than quietly falling back to SQLite.
@@ -140,3 +166,14 @@ if REDIS_URL:
         }
     }
 REST_FRAMEWORK["EXCEPTION_HANDLER"] = "config.exceptions.api_exception_handler"
+
+if not DEBUG and (
+    not CORS_ALLOWED_ORIGINS
+    or any(
+        not origin.startswith("https://") or "*" in origin
+        for origin in CORS_ALLOWED_ORIGINS
+    )
+):
+    raise ImproperlyConfigured(
+        "Production CORS/WS origins must be explicit HTTPS origins"
+    )

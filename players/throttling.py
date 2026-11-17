@@ -3,7 +3,7 @@ from rest_framework.throttling import SimpleRateThrottle
 
 class GuestCreationThrottle(SimpleRateThrottle):
     scope = "guest_creation"
-    rate = "10/minute"
+    rate = "30/minute"
 
     def get_cache_key(self, request, view):
         # Trust the peer address supplied by the server, not proxy headers.

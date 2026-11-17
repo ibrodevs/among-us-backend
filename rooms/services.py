@@ -12,15 +12,21 @@ def new_room_code() -> str:
     return "".join(secrets.choice(CODE_ALPHABET) for _ in range(6))
 
 
-def create_room_for_player(player, *, max_players: int) -> Room:
+def create_room_for_player(
+    player, *, max_players: int, impostor_count: int = 2
+) -> Room:
     for _ in range(20):
         with transaction.atomic():
             room, created = Room.objects.get_or_create(
                 code=new_room_code(),
-                defaults={"host": player, "max_players": max_players},
+                defaults={
+                    "host": player,
+                    "max_players": max_players,
+                    "settings": {"impostor_count": impostor_count},
+                },
             )
             if created:
-                RoomMembership.objects.create(room=room, player=player)
+                RoomMembership.objects.create(room=room, player=player, color=0)
                 return room
     raise RuntimeError("Could not allocate a unique room code")
 

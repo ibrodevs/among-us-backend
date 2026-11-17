@@ -1,3 +1,6 @@
+from game import metrics
+from game.services.roles import spawn_points
+
 """Authoritative actions and clock. Every writer locks Room, then Game.
 
 A durable 10 Hz worker owns elapsed time; browsers submit directions only.
@@ -10,6 +13,7 @@ from collections import Counter
 from datetime import timedelta
 from uuid import UUID
 
+from django.db.models import Count, Q
 from django.db import transaction
 from django.utils import timezone
 
@@ -22,6 +26,7 @@ from game.models import (
     Vote,
 )
 from game.physics import MAP, TASKS, move
+from game.maps import game_map, task_stations, closed_doors
 from rooms.models import Room, RoomMembership
 
 
@@ -48,10 +53,35 @@ def near(state, point, radius):
 
 
 def progress(game):
+    ctx = getattr(game, "_frame", None)
+    if ctx is not None:
+        obligated = {
+            s.player_id
+            for s in ctx["states"]
+            if s.role == "crew" and (s.alive or game.settings.get("ghost_tasks", True))
+        } & ctx["members"]
+        tasks = [t for t in ctx["tasks"] if t.player_id in obligated]
+        return sum(t.is_completed for t in tasks), len(tasks)
     # Dead crew cannot perform tasks: their outstanding obligations are retired.
-    living = game.player_states.filter(role="crew", alive=True).values("player_id")
+    living = game.player_states.filter(
+        role="crew",
+        **(
+            {}
+            if game.map_version == 2 and game.settings.get("ghost_tasks", True)
+            else {"alive": True}
+        )
+    ).values("player_id")
     tasks = game.tasks.filter(player_id__in=living)
-    return tasks.filter(is_completed=True).count(), tasks.count()
+    if game.map_version == 2:
+        tasks = tasks.filter(
+            player_id__in=RoomMembership.objects.filter(room_id=game.room_id).values(
+                "player_id"
+            )
+        )
+    counts = tasks.aggregate(
+        done=Count("pk", filter=Q(is_completed=True)), total=Count("pk")
+    )
+    return counts["done"], counts["total"]
 
 
 def evaluate_win(game, room, now):
@@ -88,6 +118,26 @@ def start_meeting(game, room, state, now, corpse=None):
     game.phase = room.status = "meeting"
     room.save(update_fields=["status"])
     game.player_states.update(direction_x=0, direction_y=0)
+    if game.map_version == 2:
+        game.player_states.update(is_in_vent=False, current_vent_id="", observing="")
+        # Meeting positions are public. Never expose a previously hidden tunnel
+        # destination by reusing the exploration coordinates in the roster view.
+        for index, participant in enumerate(game.player_states.order_by("player_id")):
+            spawn = spawn_points(game)[index]
+            participant.x, participant.y = spawn["x"], spawn["y"]
+            participant.vent_transition_started_at = None
+            participant.ability_state = {
+                key: value
+                for key, value in participant.ability_state.items()
+                if key not in ["mimic_until", "mimic_target"]
+            }
+            participant.ability_state["appearance_epoch"] = secrets.token_hex(12)
+            participant.save(
+                update_fields=["x", "y", "vent_transition_started_at", "ability_state"]
+            )
+        game.sabotages.filter(
+            kind__in=["reactor", "oxygen"], status__in=["active", "repairing"]
+        ).update(status="resolved", resolved_at=now)
     # Opening a meeting invalidates unfinished task attempts.
     game.tasks.filter(is_completed=False).update(started_at=None, challenge=[])
     meeting = Meeting.objects.create(
@@ -95,8 +145,13 @@ def start_meeting(game, room, state, now, corpse=None):
         number=game.meetings.count() + 1,
         reporter_id=state.player_id,
         corpse=corpse,
-        discussion_ends_at=now + timedelta(seconds=30),
-        voting_ends_at=now + timedelta(seconds=60),
+        discussion_ends_at=now
+        + timedelta(seconds=game.settings.get("discussion_seconds", 30)),
+        voting_ends_at=now
+        + timedelta(
+            seconds=game.settings.get("discussion_seconds", 30)
+            + game.settings.get("voting_seconds", 30)
+        ),
     )
     if corpse:
         corpse.reported_at = now
@@ -129,17 +184,32 @@ def finish_vote(game, room, meeting, now):
         "counts": dict(counts),
         "next_phase": "playing",
     }
+    if game.map_version == 2 and game.settings.get("confirm_ejects") and ejected:
+        meeting.result["ejected_role"] = game.player_states.get(player_id=ejected).role
     meeting.result_ends_at = now + timedelta(seconds=5)
+    if game.map_version == 2:
+        meeting.result["presentation_until"] = meeting.result_ends_at.isoformat()
     meeting.save(update_fields=["result", "result_ends_at"])
     game.last_meeting_result = meeting.result
     evaluate_win(game, room, now)
     return {"type": "meeting.ended", **meeting.result}
 
 
-def public_snapshot(game, now=None):
+def public_snapshot(game, now=None, viewer_id=None):
     now = now or timezone.now()
     completed, total = progress(game)
-    meeting = game.meetings.filter(finished_at__isnull=True).order_by("-number").first()
+    ctx = getattr(game, "_frame", None)
+    meeting = (
+        (
+            ctx["meeting"]
+            if ctx is not None
+            else game.meetings.filter(finished_at__isnull=True)
+            .order_by("-number")
+            .first()
+        )
+        if game.phase == "meeting"
+        else None
+    )
     data = {
         "type": "game.snapshot",
         "protocol_version": 1,
@@ -155,11 +225,19 @@ def public_snapshot(game, now=None):
                 "y": s.y,
                 "alive": s.alive,
             }
-            for s in game.player_states.select_related("player").order_by("player_id")
+            for s in (
+                game.player_states.select_related("player").order_by("player_id")
+                if game.map_version == 1
+                else []
+            )
         ],
         "bodies": [
             {"id": str(c.pk), "player_id": str(c.player_id), "x": c.x, "y": c.y}
-            for c in game.corpses.filter(reported_at__isnull=True)
+            for c in (
+                game.corpses.filter(reported_at__isnull=True)
+                if game.map_version == 1
+                else []
+            )
         ],
         "tasks_completed": completed,
         "tasks_total": total,
@@ -184,9 +262,31 @@ def public_snapshot(game, now=None):
                     else meeting.voting_ends_at
                 )
             ).isoformat(),
-            "votes_cast": meeting.votes.count(),
-            "alive_voters": game.player_states.filter(alive=True).count(),
+            "votes_cast": (
+                len(ctx["votes"]) if ctx is not None else meeting.votes.count()
+            ),
+            "alive_voters": (
+                sum(s.alive for s in ctx["states"])
+                if ctx is not None
+                else game.player_states.filter(alive=True).count()
+            ),
             "result": meeting.result,
+            **(
+                {
+                    "votes": [
+                        {
+                            "voter_id": str(v.voter_id),
+                            "target_id": str(v.target_id) if v.target_id else None,
+                        }
+                        for v in (
+                            ctx["votes"] if ctx is not None else meeting.votes.all()
+                        )
+                    ]
+                }
+                if game.map_version == 2
+                and not game.settings.get("anonymous_votes", True)
+                else {}
+            ),
         }
     if game.phase == "finished":
         data["result"] = {
@@ -194,16 +294,49 @@ def public_snapshot(game, now=None):
             "reason": game.finish_reason,
             "players_with_roles": [
                 {"id": str(s.player_id), "nickname": s.player.nickname, "role": s.role}
-                for s in game.player_states.select_related("player")
+                for s in (
+                    ctx["states"]
+                    if ctx is not None
+                    else game.player_states.select_related("player")
+                )
             ],
         }
+    if game.map_version == 2:
+        from game.v2 import enrich_public
+
+        data = enrich_public(game, data, viewer_id, now)
     return data
 
 
 def private_snapshot(game, player_id):
-    state = game.player_states.get(player_id=player_id)
-    meeting = game.meetings.filter(finished_at__isnull=True).first()
-    return {
+    ctx = getattr(game, "_frame", None)
+    state = next(
+        (
+            s
+            for s in (
+                ctx["states"]
+                if ctx is not None
+                else getattr(game, "_snapshot_states", [])
+            )
+            if str(s.player_id) == str(player_id)
+        ),
+        None,
+    ) or game.player_states.get(player_id=player_id)
+    task_models = (
+        [t for t in ctx["tasks"] if str(t.player_id) == str(player_id)]
+        if ctx is not None
+        else list(game.tasks.filter(player_id=player_id).order_by("task_point"))
+    )
+    meeting = (
+        (
+            ctx["meeting"]
+            if ctx is not None
+            else game.meetings.filter(finished_at__isnull=True).first()
+        )
+        if game.phase == "meeting"
+        else None
+    )
+    data = {
         "type": "game.self",
         "protocol_version": 1,
         "game_id": str(game.pk),
@@ -216,7 +349,12 @@ def private_snapshot(game, player_id):
         ),
         "emergency_used": state.emergency_used,
         "has_voted": bool(
-            meeting and meeting.votes.filter(voter_id=player_id).exists()
+            meeting
+            and (
+                any(str(v.voter_id) == str(player_id) for v in ctx["votes"])
+                if ctx is not None
+                else meeting.votes.filter(voter_id=player_id).exists()
+            )
         ),
         "tasks": [
             {
@@ -226,13 +364,22 @@ def private_snapshot(game, player_id):
                 "is_completed": t.is_completed,
                 "started_at": t.started_at.isoformat() if t.started_at else None,
                 "challenge": t.challenge,
-                **TASKS.get(t.task_point, {}),
+                **task_stations(game).get(
+                    t.extra.get("destination") if t.stage else t.task_point, {}
+                ),
             }
-            for t in game.tasks.filter(player_id=player_id).order_by("task_point")
+            for t in task_models
         ],
     }
 
+    if game.map_version == 2:
+        from game.v2 import enrich_private
 
+        data = enrich_private(game, state, data, task_models=task_models)
+    return data
+
+
+@metrics.timed("command_processing_ms")
 @transaction.atomic
 def command(code, player_id, payload, now=None):
     now = now or timezone.now()
@@ -246,9 +393,38 @@ def command(code, player_id, payload, now=None):
     require(game is not None, "INVALID_PHASE", "Матч ещё не начат")
     require(game.phase != "finished", "INVALID_PHASE", "Матч завершён")
     state = game.player_states.get(player_id=player_id)
-    require(state.alive, "FORBIDDEN", "Вы наблюдаете за матчем")
+    ghost_allowed = game.map_version == 2 and payload["type"] in [
+        "player.move",
+        "task.begin",
+        "task.complete",
+        "meeting.chat.send",
+        "player.ability.use",
+    ]
+    ghost_allowed = ghost_allowed or (
+        game.map_version == 2
+        and payload["type"] == "sabotage.start"
+        and game.settings.get("ghost_sabotage", False)
+    )
+    require(state.alive or ghost_allowed, "FORBIDDEN", "Вы наблюдаете за матчем")
     kind = payload["type"]
     events = []
+    if game.map_version == 2:
+        from game.v2 import handle_command, advance_world
+
+        if advance_world(game, room, now) and game.phase == "finished":
+            game.state_version += 1
+            game.save()
+            return [], public_snapshot(game, now), private_snapshot(game, player_id)
+        handled, extra_events = handle_command(game, room, state, payload, now)
+        if handled:
+            game.state_version += 1
+            game.save()
+            return (
+                extra_events,
+                public_snapshot(game, now),
+                private_snapshot(game, player_id),
+            )
+        require(not state.is_in_vent, "FORBIDDEN", "Сначала выйдите из тоннеля")
     if kind == "vote.cast":
         require(game.phase == "meeting", "INVALID_PHASE", "Нет активного собрания")
         meeting = game.meetings.get(finished_at__isnull=True)
@@ -275,7 +451,11 @@ def command(code, player_id, payload, now=None):
             "BAD_PAYLOAD",
             "Недопустимая цель",
         )
-        # Self-votes are allowed and documented.
+        require(
+            game.settings.get("self_vote", True) or target != state.player_id,
+            "FORBIDDEN",
+            "Self voting disabled",
+        )
         Vote.objects.create(meeting=meeting, voter_id=player_id, target_id=target)
         events.append(
             {
@@ -317,8 +497,34 @@ def command(code, player_id, payload, now=None):
                 else 1
             )
             available = min(2, state.move_tokens + elapsed * 10)
-            require(available >= 1, "RATE_LIMITED", "Слишком частые команды")
-            state.move_tokens = available - 1
+            stopping = game.map_version == 2 and dx == 0 and dy == 0
+            require(
+                available >= 1 or stopping, "RATE_LIMITED", "Слишком частые команды"
+            )
+            state.move_tokens = available if stopping else available - 1
+            if (
+                stopping
+                and state.last_move_at
+                and (state.direction_x or state.direction_y)
+            ):
+                # Settle the fraction of the current tick before clearing input,
+                # so short taps do not disappear between clock iterations.
+                since = max(game.last_tick_at or state.last_move_at, state.last_move_at)
+                seconds = min(0.15, max(0, (now - since).total_seconds()))
+                if (now - state.last_move_at).total_seconds() < 0.35:
+                    state.x, state.y = move(
+                        state.x,
+                        state.y,
+                        state.direction_x,
+                        state.direction_y,
+                        seconds,
+                        {
+                            **game_map(game),
+                            "speed": game.settings.get("speed", 220),
+                            **({"walls": []} if not state.alive else {}),
+                        },
+                        [] if not state.alive else closed_doors(game, now),
+                    )
             (
                 state.direction_x,
                 state.direction_y,
@@ -332,14 +538,42 @@ def command(code, player_id, payload, now=None):
                     "move_tokens",
                     "last_move_seq",
                     "last_move_at",
+                    "x",
+                    "y",
                 ]
             )
+            if stopping:
+                game.state_version += 1
+                game.save(update_fields=["state_version"])
+                return [], None, private_snapshot(game, player_id)
             return [], None, None
         elif kind == "player.kill":
             require(state.role == "impostor")
-            target = game.player_states.filter(
-                player_id=uuid_value(payload.get("target_player_id"))
-            ).first()
+            if game.map_version == 2:
+                from game.v2 import appearance_id, visible, future
+
+                target = next(
+                    (
+                        p
+                        for p in game.player_states.all()
+                        if appearance_id(game, p) == payload.get("target_player_id")
+                    ),
+                    None,
+                )
+                require(
+                    target
+                    and not target.is_in_vent
+                    and visible(game, state, {"x": target.x, "y": target.y}, now)
+                )
+                require(
+                    not future(target.ability_state.get("shield_until"), now),
+                    "SHIELDED",
+                    "Target protected",
+                )
+            else:
+                target = game.player_states.filter(
+                    player_id=uuid_value(payload.get("target_player_id"))
+                ).first()
             require(
                 target
                 and target.alive
@@ -358,9 +592,15 @@ def command(code, player_id, payload, now=None):
                 "COOLDOWN",
                 "Перезарядка",
             )
+            if game.map_version == 2:
+                from game.v2 import record_effect
+
+                record_effect(game, "kill", target, now)
             target.alive, target.direction_x, target.direction_y = False, 0, 0
             target.save(update_fields=["alive", "direction_x", "direction_y"])
-            state.kill_available_at = now + timedelta(seconds=25)
+            state.kill_available_at = now + timedelta(
+                seconds=game.settings.get("kill_cooldown", 25)
+            )
             state.save(update_fields=["kill_available_at"])
             body = Corpse.objects.create(
                 game=game, player_id=target.player_id, x=target.x, y=target.y
@@ -383,9 +623,15 @@ def command(code, player_id, payload, now=None):
             ).first()
             require(task is not None, "FORBIDDEN", "Это не ваше задание")
             require(not task.is_completed, "ALREADY_DONE", "Задание уже выполнено")
-            config = TASKS[task.task_point]
+            config = task_stations(game)[
+                task.extra.get("destination") if task.stage else task.task_point
+            ]
             require(near(state, config, 85), "OUT_OF_RANGE", "Подойдите к терминалу")
-            if kind == "task.begin":
+            if game.map_version == 2:
+                from game.v2 import task_action
+
+                events.extend(task_action(game, state, task, payload, now))
+            elif kind == "task.begin":
                 if task.started_at is None:
                     task.started_at = now
                     task.challenge = (
@@ -431,15 +677,27 @@ def command(code, player_id, payload, now=None):
                 "OUT_OF_RANGE",
                 "Подойдите ближе к телу",
             )
+            if game.map_version == 2:
+                from game.v2 import visible
+
+                require(visible(game, state, {"x": body.x, "y": body.y}, now))
             events.append(start_meeting(game, room, state, now, body))
         elif kind == "meeting.call":
+            require(
+                game.map_version != 2
+                or not game.sabotages.filter(
+                    kind__in=["reactor", "oxygen"], status__in=["active", "repairing"]
+                ).exists(),
+                "CRITICAL_ACTIVE",
+                "Repair the emergency first",
+            )
             require(
                 not state.emergency_used,
                 "ALREADY_DONE",
                 "Экстренное собрание уже использовано",
             )
             require(
-                near(state, MAP["emergency"], 85),
+                near(state, game_map(game)["emergency"], 85),
                 "OUT_OF_RANGE",
                 "Подойдите к центральному пульту",
             )
@@ -471,7 +729,11 @@ def tick(code, now=None):
     events = []
     changed = False
     if game.phase == "playing":
-        for state in game.player_states.filter(alive=True):
+        for state in game.player_states.filter(
+            **({} if game.map_version == 2 else {"alive": True})
+        ):
+            if state.is_in_vent:
+                continue
             if (
                 state.last_move_at
                 and (now - state.last_move_at).total_seconds() < 0.35
@@ -483,6 +745,25 @@ def tick(code, now=None):
                     state.direction_x,
                     state.direction_y,
                     min(dt, 0.15),
+                    (
+                        {
+                            **game_map(game),
+                            "walls": [],
+                            "speed": game.settings.get("speed", 220),
+                        }
+                        if game.map_version == 2 and not state.alive
+                        else {
+                            **game_map(game),
+                            "speed": game.settings.get(
+                                "speed", game_map(game)["speed"]
+                            ),
+                        }
+                    ),
+                    (
+                        []
+                        if game.map_version == 2 and not state.alive
+                        else closed_doors(game, now)
+                    ),
                 )
                 state.save(update_fields=["x", "y"])
                 for task in game.tasks.filter(
@@ -490,7 +771,17 @@ def tick(code, now=None):
                     is_completed=False,
                     started_at__isnull=False,
                 ):
-                    if not near(state, TASKS[task.task_point], 85):
+                    if not near(
+                        state,
+                        task_stations(game)[
+                            (
+                                task.extra.get("destination")
+                                if task.stage
+                                else task.task_point
+                            )
+                        ],
+                        85,
+                    ):
                         task.started_at = None
                         task.challenge = []
                         task.save(update_fields=["started_at", "challenge"])
@@ -513,10 +804,12 @@ def tick(code, now=None):
                 game.corpses.filter(reported_at__isnull=True).update(reported_at=now)
                 for index, state in enumerate(game.player_states.order_by("player_id")):
                     state.x, state.y = (
-                        MAP["spawns"][index]["x"],
-                        MAP["spawns"][index]["y"],
+                        spawn_points(game)[index]["x"],
+                        spawn_points(game)[index]["y"],
                     )
-                    state.kill_available_at = now + timedelta(seconds=25)
+                    state.kill_available_at = now + timedelta(
+                        seconds=game.settings.get("kill_cooldown", 25)
+                    )
                     state.save(update_fields=["x", "y", "kill_available_at"])
                 game.phase = room.status = "playing"
                 room.save(update_fields=["status"])
@@ -525,6 +818,11 @@ def tick(code, now=None):
             events.append(finish_vote(game, room, meeting, now))
             changed = True
         elif now >= meeting.discussion_ends_at:
+            changed = True
+    if game.map_version == 2:
+        from game.v2 import advance_world
+
+        if advance_world(game, room, now):
             changed = True
     if changed:
         game.state_version += 1

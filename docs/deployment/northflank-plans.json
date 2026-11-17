@@ -1,0 +1,59 @@
+{
+  "source": "https://api.northflank.com/v1/plans",
+  "plans": [
+    {
+      "id": "nf-compute-20",
+      "name": "nf-compute-20",
+      "type": [
+        "deployment"
+      ],
+      "currency": "usd",
+      "cpuResource": 0.2,
+      "ramResource": 512,
+      "configuration": {
+        "type": "northflank",
+        "resources": {
+          "cpu": {
+            "resources": {
+              "limit": 0.2
+            }
+          },
+          "memory": {
+            "resources": {
+              "limit": 512
+            }
+          }
+        }
+      },
+      "amountPerHour": 0.008,
+      "amountPerMonth": 5.4
+    },
+    {
+      "id": "nf-compute-10",
+      "name": "nf-compute-10",
+      "type": [
+        "deployment"
+      ],
+      "currency": "usd",
+      "cpuResource": 0.1,
+      "ramResource": 256,
+      "configuration": {
+        "type": "northflank",
+        "resources": {
+          "cpu": {
+            "resources": {
+              "limit": 0.1
+            }
+          },
+          "memory": {
+            "resources": {
+              "limit": 256
+            }
+          }
+        }
+      },
+      "amountPerHour": 0.004,
+      "amountPerMonth": 2.7
+    }
+  ]
+}

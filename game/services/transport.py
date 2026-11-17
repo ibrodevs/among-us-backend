@@ -7,6 +7,13 @@ import logging
 def publish_update(code, snapshot, events, refresh_private=False):
     if snapshot is None:
         return
+    if snapshot.get("protocol_version") == 2:
+        # Only invalidation crosses the room bus; each observer gets a filtered view.
+        snapshot, events, refresh_private = (
+            {"protocol_version": 2, "state_version": snapshot["state_version"]},
+            [],
+            True,
+        )
     try:
         async_to_sync(get_channel_layer().group_send)(
             room_group(code),

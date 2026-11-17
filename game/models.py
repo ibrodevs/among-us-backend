@@ -15,6 +15,11 @@ class GameSession(models.Model):
     room = models.OneToOneField(
         "rooms.Room", on_delete=models.CASCADE, related_name="game"
     )
+    map_version = models.PositiveSmallIntegerField(default=1)
+    map_mode = models.CharField(max_length=10, default="full")
+    settings = models.JSONField(default=dict)
+    effects = models.JSONField(default=list)
+    sabotage_available_at = models.DateTimeField(null=True, blank=True)
     phase = models.CharField(
         max_length=10, choices=Phase.choices, default=Phase.PLAYING
     )
@@ -43,6 +48,15 @@ class PlayerGameState(models.Model):
     alive = models.BooleanField(default=True)
     x = models.FloatField(default=0)
     y = models.FloatField(default=0)
+    is_in_vent = models.BooleanField(default=False)
+    current_vent_id = models.CharField(max_length=64, blank=True)
+    vent_transition_started_at = models.DateTimeField(null=True, blank=True)
+    vent_available_at = models.DateTimeField(null=True, blank=True)
+    special_role = models.CharField(max_length=20, blank=True)
+    ability_available_at = models.DateTimeField(null=True, blank=True)
+    ability_state = models.JSONField(default=dict)
+    observing = models.CharField(max_length=64, blank=True)
+    color = models.PositiveSmallIntegerField(default=0)
     direction_x = models.FloatField(default=0)
     direction_y = models.FloatField(default=0)
     emergency_used = models.BooleanField(default=False)
@@ -76,6 +90,9 @@ class TaskAssignment(models.Model):
     task_point = models.CharField(max_length=64)
     is_completed = models.BooleanField(default=False)
     started_at = models.DateTimeField(null=True, blank=True)
+    stage = models.PositiveSmallIntegerField(default=0)
+    stage_total = models.PositiveSmallIntegerField(default=1)
+    extra = models.JSONField(default=dict)
     challenge = models.JSONField(default=list)
     completed_at = models.DateTimeField(null=True, blank=True)
 
@@ -162,3 +179,44 @@ class ConnectionLease(models.Model):
     room = models.ForeignKey("rooms.Room", on_delete=models.CASCADE)
     player = models.ForeignKey("players.Player", on_delete=models.CASCADE)
     expires_at = models.DateTimeField(db_index=True)
+
+
+class DoorState(models.Model):
+    game = models.ForeignKey(
+        GameSession, on_delete=models.CASCADE, related_name="doors"
+    )
+    door_id = models.CharField(max_length=64)
+    closed_until = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["game", "door_id"], name="unique_game_door")
+        ]
+
+
+class SabotageInstance(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    game = models.ForeignKey(
+        GameSession, on_delete=models.CASCADE, related_name="sabotages"
+    )
+    kind = models.CharField(max_length=20)
+    status = models.CharField(max_length=12, default="active")
+    started_at = models.DateTimeField()
+    deadline_at = models.DateTimeField(null=True, blank=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    initiator = models.ForeignKey(
+        "players.Player", on_delete=models.SET_NULL, null=True
+    )
+    repairs = models.JSONField(default=dict)
+    challenge = models.JSONField(default=dict)
+
+
+class MeetingMessage(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    meeting = models.ForeignKey(
+        Meeting, on_delete=models.CASCADE, related_name="messages"
+    )
+    player = models.ForeignKey("players.Player", on_delete=models.CASCADE)
+    text = models.CharField(max_length=500)
+    ghost_channel = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)

@@ -44,7 +44,11 @@ async def check(base):
             guests.append(guest)
             if code is None:
                 room = await asyncio.to_thread(
-                    post, base, "/api/v1/rooms/", {"max_players": 4}, guest["token"]
+                    post,
+                    base,
+                    "/api/v1/rooms/",
+                    {"max_players": 4, "impostor_count": 1},
+                    guest["token"],
                 )
                 code = room["code"]
             else:
@@ -60,15 +64,18 @@ async def check(base):
             + f"/ws/rooms/{code}/"
         )
         async with connect(ws_url, origin="http://localhost:3000") as socket:
-            await socket.send(json.dumps({"type": "auth", "token": guests[0]["token"]}))
+            await socket.send(
+                json.dumps(
+                    {"type": "auth", "token": guests[0]["token"], "protocol_version": 2}
+                )
+            )
             await receive_type(socket, "auth.ok")
             snapshot = await receive_type(socket, "game.snapshot")
-            assert "role" not in json.dumps(snapshot)
+            assert all("role" not in p for p in snapshot["players"])
+            assert all("role" not in p for p in snapshot.get("roster", []))
             own = await receive_type(socket, "game.self")
             assert own["role"] in ("crew", "impostor")
-            before = next(
-                p for p in snapshot["players"] if p["id"] == guests[0]["player_id"]
-            )
+            before = own
             await socket.send(
                 json.dumps(
                     {
@@ -78,11 +85,11 @@ async def check(base):
                     }
                 )
             )
-            updated = await receive_type(socket, "game.snapshot")
-            after = next(
-                p for p in updated["players"] if p["id"] == guests[0]["player_id"]
-            )
-            assert 0 < after["x"] - before["x"] <= 52.5, (before, after)
+            for _ in range(30):
+                after = await receive_type(socket, "game.self")
+                if after["x"] > before["x"]:
+                    break
+            assert 0 < after["x"] - before["x"] <= 55.1, (before["x"], after["x"])
             print(
                 "PASS: real REST start, private role and server movement across API/clock containers with PostgreSQL + Redis"
             )

@@ -4,6 +4,7 @@ import logging
 import time
 from datetime import timedelta
 from django.utils import timezone
+from game import metrics
 from game.models import GameSession, ConnectionLease
 from game.services.simulation import (
     command,
@@ -15,7 +16,7 @@ from game.services.transport import publish_update
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from django.db import DatabaseError
+from django.db import DatabaseError, transaction, connection
 from rest_framework.exceptions import AuthenticationFailed
 
 from game.services.events import TRANSPORT_ERRORS, player_group, room_group
@@ -34,6 +35,10 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
         self.player_id = None
         self.joined_groups = []
         self.command_times = []
+        self.protocol_version = 1
+        self.last_game_version = -1
+        self.previous_public = None
+        self.previous_own = None
         await self.accept()
         self.auth_timeout = asyncio.create_task(self._expire_unauthenticated())
 
@@ -74,6 +79,7 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 await self._error("UNAUTHORIZED", "Authenticate first", close_code=4401)
                 return
             try:
+                self.protocol_version = content.get("protocol_version", 1)
                 self.player_id = await self._authenticate(content["token"])
                 self.auth_timeout.cancel()
                 # Subscribe before reading state: a concurrent start is either
@@ -107,8 +113,16 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 "ALREADY_AUTHENTICATED", "Open a new connection to authenticate again"
             )
         elif msg_type == "ping":
-            await self._renew_lease()
-            await self.send_json({"type": "pong"})
+            try:
+                await self._renew_lease()
+                await self.send_json({"type": "pong"})
+                # The bus carries disposable invalidations. Recover the latest
+                # durable state even if a final invalidation was dropped.
+                await self._send_game_state()
+            except SERVICE_ERRORS:
+                await self._error(
+                    "SERVICE_UNAVAILABLE", "Service temporarily unavailable"
+                )
         else:
             now = time.monotonic()
             self.command_times = [t for t in self.command_times if now - t < 1]
@@ -117,11 +131,28 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 return
             self.command_times.append(now)
             try:
+                queued = time.monotonic()
                 events, snapshot, own = await database_sync_to_async(command)(
                     self.room_code, self.player_id, content
                 )
+                metrics.record(
+                    "command_roundtrip_ms", (time.monotonic() - queued) * 1000
+                )
+                metrics.count("commands")
+                metrics.flush("api")
                 if own is not None:
                     await self.send_json(own)
+                    if own.get("protocol_version") == 2:
+                        for event in events:
+                            if event["type"] in ["task.challenge", "task.verified"]:
+                                await self.send_json(
+                                    {
+                                        "protocol_version": 2,
+                                        "game_id": own["game_id"],
+                                        "state_version": own["state_version"],
+                                        **event,
+                                    }
+                                )
                 await database_sync_to_async(publish_update)(
                     self.room_code, snapshot, events, True
                 )
@@ -176,9 +207,13 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 "expires_at": timezone.now() + timedelta(seconds=45),
             },
         )
-        RoomMembership.objects.filter(room=room, player=player).update(
-            is_connected=True
-        )
+        changed = RoomMembership.objects.filter(
+            room=room, player=player, is_connected=False
+        ).update(is_connected=True)
+        if changed and room.status == "waiting":
+            from rooms.services import notify_lobby_changed
+
+            notify_lobby_changed(room.code)
         return str(player.pk)
 
     @database_sync_to_async
@@ -195,9 +230,19 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
             player_id=self.player_id,
             expires_at__gt=timezone.now(),
         ).exists():
-            RoomMembership.objects.filter(
-                room__code=self.room_code, player_id=self.player_id
+            changed = RoomMembership.objects.filter(
+                room__code=self.room_code, player_id=self.player_id, is_connected=True
             ).update(is_connected=False)
+            if changed:
+                from rooms.models import Room
+
+                if not Room.objects.filter(
+                    code=self.room_code, status="waiting"
+                ).exists():
+                    return
+                from rooms.services import notify_lobby_changed
+
+                notify_lobby_changed(self.room_code)
 
     @database_sync_to_async
     def _renew_lease(self):
@@ -207,20 +252,65 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
 
     @database_sync_to_async
     def _game_state(self):
-        get_member_room(self.room_code, self.player_id)
-        game = GameSession.objects.filter(room__code=self.room_code).first()
-        return (
-            (public_snapshot(game), private_snapshot(game, self.player_id))
-            if game
-            else (None, None)
-        )
+        nested = connection.in_atomic_block
+        with transaction.atomic():
+            if connection.vendor == "postgresql" and not nested:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY"
+                    )
+            game = (
+                GameSession.objects.select_related("room")
+                .filter(
+                    room__code=self.room_code,
+                    room__memberships__player_id=self.player_id,
+                )
+                .first()
+            )
+            if game and game.map_version == 2:
+                from game.services.frames import observer_frame
+
+                return observer_frame(
+                    game, self.player_id, public_snapshot, private_snapshot
+                )
+            get_member_room(self.room_code, self.player_id)
+            return (
+                (
+                    public_snapshot(game, viewer_id=self.player_id),
+                    private_snapshot(game, self.player_id),
+                )
+                if game
+                else (None, None)
+            )
 
     async def _send_game_state(self):
         try:
             public, own = await self._game_state()
             if public:
+                if public.get("protocol_version") == 2 and self.protocol_version != 2:
+                    await self._error(
+                        "UPGRADE_REQUIRED",
+                        "Update the client for Asterion",
+                        close_code=4406,
+                    )
+                    return
+                self.last_game_version = public["state_version"]
+                metrics.record(
+                    "snapshot_bytes",
+                    len(json.dumps(public).encode()) + len(json.dumps(own).encode()),
+                )
+                metrics.count("snapshot_pairs")
+                metrics.flush("api")
                 await self.send_json(public)
                 await self.send_json(own)
+                if public.get("protocol_version") == 2:
+                    from game.observer_events import changes
+
+                    for event in changes(
+                        self.previous_public, public, self.previous_own, own
+                    ):
+                        await self.send_json(event)
+                    self.previous_public, self.previous_own = public, own
         except AuthenticationFailed:
             await self._error("UNAUTHORIZED", "Invalid guest or room", close_code=4401)
         except SERVICE_ERRORS:
@@ -232,6 +322,10 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
 
     async def game_update(self, event):
         try:
+            if event["snapshot"].get("protocol_version") == 2:
+                if event["snapshot"].get("state_version", 0) > self.last_game_version:
+                    await self._send_game_state()
+                return
             await database_sync_to_async(get_member_room)(
                 self.room_code, self.player_id
             )

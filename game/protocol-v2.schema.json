@@ -1,0 +1,374 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Crew Mission protocol v2",
+  "description": "The command envelope is client to server. Observer events are derived exclusively from the authenticated viewer-filtered snapshots; role and task data exist only in game.self. game.snapshot and game.self remain the reconnect source of truth.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/command"
+    },
+    {
+      "$ref": "#/$defs/event"
+    }
+  ],
+  "$defs": {
+    "command": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "seq",
+            "direction"
+          ],
+          "properties": {
+            "type": {
+              "const": "player.move"
+            },
+            "seq": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "direction": {
+              "type": "object",
+              "required": [
+                "x",
+                "y"
+              ],
+              "properties": {
+                "x": {
+                  "type": "number",
+                  "minimum": -1,
+                  "maximum": 1
+                },
+                "y": {
+                  "type": "number",
+                  "minimum": -1,
+                  "maximum": 1
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "vent_id"
+          ],
+          "properties": {
+            "type": {
+              "const": "vent.enter"
+            },
+            "vent_id": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "vent_id"
+          ],
+          "properties": {
+            "type": {
+              "const": "vent.travel"
+            },
+            "vent_id": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "vent.exit"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "kind"
+          ],
+          "properties": {
+            "type": {
+              "const": "sabotage.start"
+            },
+            "kind": {
+              "enum": [
+                "lights",
+                "reactor",
+                "oxygen",
+                "comms",
+                "doors"
+              ]
+            },
+            "group": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "sabotage_id",
+            "panel_id"
+          ],
+          "properties": {
+            "type": {
+              "const": "sabotage.repair.begin"
+            },
+            "sabotage_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "panel_id": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "sabotage_id",
+            "panel_id",
+            "solution"
+          ],
+          "properties": {
+            "type": {
+              "const": "sabotage.repair.complete"
+            },
+            "sabotage_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "panel_id": {
+              "type": "string"
+            },
+            "solution": {
+              "type": "array",
+              "maxItems": 32,
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "door_id"
+          ],
+          "properties": {
+            "type": {
+              "const": "door.interact"
+            },
+            "door_id": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "terminal_id"
+          ],
+          "properties": {
+            "type": {
+              "const": "terminal.use"
+            },
+            "terminal_id": {
+              "type": "string"
+            },
+            "camera_id": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "target_player_id"
+          ],
+          "properties": {
+            "type": {
+              "const": "player.ability.use"
+            },
+            "target_player_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "target_player_id"
+          ],
+          "properties": {
+            "type": {
+              "const": "player.kill"
+            },
+            "target_player_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "body_id"
+          ],
+          "properties": {
+            "type": {
+              "const": "body.report"
+            },
+            "body_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "meeting.call"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "text"
+          ],
+          "properties": {
+            "type": {
+              "const": "meeting.chat.send"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "target_player_id"
+          ],
+          "properties": {
+            "type": {
+              "const": "vote.cast"
+            },
+            "target_player_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "task_id"
+          ],
+          "properties": {
+            "type": {
+              "const": "task.begin"
+            },
+            "task_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "task_id",
+            "solution"
+          ],
+          "properties": {
+            "type": {
+              "const": "task.complete"
+            },
+            "task_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "solution": {
+              "type": "array",
+              "maxItems": 32,
+              "items": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "event": {
+      "type": "object",
+      "required": [
+        "type",
+        "protocol_version",
+        "game_id",
+        "state_version"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "map.state",
+            "vent.state",
+            "door.state",
+            "sabotage.started",
+            "sabotage.updated",
+            "sabotage.resolved",
+            "task.challenge",
+            "task.verified",
+            "meeting.chat.message",
+            "ability.result",
+            "player.ghost",
+            "game.settings",
+            "sabotage.failed"
+          ]
+        },
+        "protocol_version": {
+          "const": 2
+        },
+        "game_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}
