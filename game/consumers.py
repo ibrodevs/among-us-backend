@@ -113,9 +113,12 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 "ALREADY_AUTHENTICATED", "Open a new connection to authenticate again"
             )
         elif msg_type == "ping":
+            # Measure WebSocket transport RTT, not a PostgreSQL lease write.
+            # The authenticated connection still renews its lease and
+            # recovers durable state immediately after replying.
+            await self.send_json({"type": "pong"})
             try:
                 await self._renew_lease()
-                await self.send_json({"type": "pong"})
                 # The bus carries disposable invalidations. Recover the latest
                 # durable state even if a final invalidation was dropped.
                 await self._send_game_state()
