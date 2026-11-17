@@ -4,6 +4,7 @@ import json
 import math
 from collections import deque
 from pathlib import Path
+from scripts.asterion_rooms import apply_room_definitions
 
 ROOT = Path(__file__).resolve().parents[1]
 GROUPS = {
@@ -94,6 +95,7 @@ def build():
             bounds=rect(2480, 1710, 900, 520),
         )
     )
+    decor = apply_room_definitions(rooms, rect)
     grid = {(r["col"], r["row"]): r for r in rooms}
     corridors = []
     doors = []
@@ -128,7 +130,35 @@ def build():
                 )
             )
             edges.append([a["id"], b["id"]])
-    floor = [r["bounds"] for r in rooms] + [c["bounds"] for c in corridors]
+    for room in rooms:
+        outline = []
+        for x0, y0, x1, y1 in room["outline"]:
+            horizontal = y0 == y1
+            cuts = {x0, x1} if horizontal else {y0, y1}
+            for corridor in corridors:
+                b = corridor["bounds"]
+                cuts.update(
+                    [b["x"], b["x"] + b["width"]]
+                    if horizontal
+                    else [b["y"], b["y"] + b["height"]]
+                )
+            cuts = (
+                sorted(v for v in cuts if min(x0, x1) <= v <= max(x0, x1))
+                if horizontal
+                else sorted(v for v in cuts if min(y0, y1) <= v <= max(y0, y1))
+            )
+            for low, high in zip(cuts, cuts[1:]):
+                mx, my = (
+                    ((low + high) / 2, y0) if horizontal else (x0, (low + high) / 2)
+                )
+                if not any(contains(c["bounds"], mx, my) for c in corridors):
+                    outline.append(
+                        [low, y0, high, y1] if horizontal else [x0, low, x1, high]
+                    )
+        room["outline"] = outline
+    floor = [p for r in rooms for p in r["floor_parts"]] + [
+        c["bounds"] for c in corridors
+    ]
     xs = sorted({0, 6144, *[v for r in floor for v in [r["x"], r["x"] + r["width"]]]})
     ys = sorted({0, 4096, *[v for r in floor for v in [r["y"], r["y"] + r["height"]]]})
     walls = []
@@ -155,8 +185,8 @@ def build():
                 current[(x0, x1)] = len(walls)
                 walls.append(rect(x0, y0, x1 - x0, y1 - y0))
         previous = current
+    walls.extend(d["bounds"] for d in decor if d["solid"])
     tasks = []
-    decor = []
     vents = []
     for i, r in enumerate(rooms[:-1]):
         b = r["bounds"]
@@ -201,38 +231,6 @@ def build():
                     ),
                 )
             )
-        for j in range(3):
-            q = rect(b["x"] + 140 + j * 240, b["y"] + 75, 130, 90)
-            walls.append(q)
-            decor.append(
-                dict(
-                    id=r["id"] + "-machine" + str(j),
-                    kind=[
-                        "reactor",
-                        "console",
-                        "engine",
-                        "pipes",
-                        "console",
-                        "console",
-                        "console",
-                        "antenna",
-                        "console",
-                        "telescope",
-                        "capsule",
-                        "capsule",
-                        "pod",
-                        "pipes",
-                        "bed",
-                        "crate",
-                        "fuel",
-                        "servers",
-                        "tram",
-                        "airlock",
-                    ][i],
-                    room_id=r["id"],
-                    bounds=q,
-                )
-            )
         vents.append(
             dict(
                 id="vent-" + r["id"],
@@ -247,6 +245,39 @@ def build():
                 connected_vent_ids=[],
             )
         )
+
+    # Resolve authored interaction approaches onto a clear floor cell. The same
+    # coordinate is used by art, server validation, minimap and exit placement.
+    def clear_point(room_id, target, used):
+        room = next(r for r in rooms if r["id"] == room_id)
+        b = room["bounds"]
+        candidates = []
+        for x in range(math.ceil(b["x"] / 40) * 40, b["x"] + b["width"], 40):
+            for y in range(math.ceil(b["y"] / 40) * 40, b["y"] + b["height"], 40):
+                if not any(contains(p, x, y) for p in room["floor_parts"]):
+                    continue
+                if any(
+                    x - 38 < p["x"] + p["width"]
+                    and x + 38 > p["x"]
+                    and y - 38 < p["y"] + p["height"]
+                    and y + 38 > p["y"]
+                    for p in walls
+                ):
+                    continue
+                if any(math.hypot(x - q["x"], y - q["y"]) < 100 for q in used):
+                    continue
+                candidates.append(dict(x=x, y=y))
+        assert candidates, room_id
+        return min(
+            candidates,
+            key=lambda p: math.hypot(p["x"] - target["x"], p["y"] - target["y"]),
+        )
+
+    used = []
+    for i, point in enumerate([*tasks, *vents]):
+        target = dict(x=point["x"], y=point["y"] + (i % 3 - 1) * 45)
+        point.update(clear_point(point["room_id"], target, used))
+        used.append(point)
     for network in range(3):
         nodes = [v for v in vents if v["network"] == network]
         for i, v in enumerate(nodes):
@@ -272,7 +303,7 @@ def build():
                         ]
                     )
                 )
-    center = dict(x=2930, y=1970)
+    center = dict(x=2930, y=2040)
     panels = []
     for kind, rs in {
         "reactor": ["power", "transit"],
@@ -292,6 +323,8 @@ def build():
                     y=b["y"] + 230,
                 )
             )
+    for panel in panels:
+        panel.update(clear_point(panel["room_id"], panel, []))
     cameras = [
         dict(
             id="cam-" + r["id"],
@@ -303,6 +336,22 @@ def build():
         for r in rooms
         if r["compact"] and r["id"] != "nexus"
     ]
+    node_positions = {
+        r["id"]: clear_point(
+            r["id"], dict(x=r["bounds"]["x"] + 450, y=r["bounds"]["y"] + 260), []
+        )
+        for r in rooms
+    }
+    spawn_points = []
+    for i in range(10):
+        angle = i * math.pi / 5
+        spawn_points.append(
+            clear_point(
+                "nexus",
+                dict(x=2930 + 175 * math.cos(angle), y=1970 + 150 * math.sin(angle)),
+                spawn_points,
+            )
+        )
     routes = []
     by_id = {r["id"]: r for r in rooms}
     for corridor in corridors:
@@ -319,8 +368,8 @@ def build():
                 for r in walls
             )
 
-        start = ((a["bounds"]["x"] + 440) // 20, (a["bounds"]["y"] + 250) // 20)
-        goal = ((b["bounds"]["x"] + 440) // 20, (b["bounds"]["y"] + 250) // 20)
+        start = (node_positions[a["id"]]["x"] // 20, node_positions[a["id"]]["y"] // 20)
+        goal = (node_positions[b["id"]]["x"] // 20, node_positions[b["id"]]["y"] // 20)
         queue = deque([start])
         previous = {start: None}
         while queue and goal not in previous:
@@ -330,7 +379,14 @@ def build():
                 if cell not in previous and free(cell):
                     previous[cell] = (x, y)
                     queue.append(cell)
-        assert goal in previous, corridor["id"]
+        assert goal in previous, (
+            corridor["id"],
+            free(start),
+            free(goal),
+            len(previous),
+            start,
+            goal,
+        )
         path = []
         cell = goal
         while cell is not None:
@@ -359,6 +415,7 @@ def build():
         )
     return dict(
         map_id="asterion",
+        design_revision="2.1",
         version=2,
         map_version=2,
         width=6144,
@@ -370,7 +427,7 @@ def build():
         corridors=corridors,
         walls=walls,
         doors=doors,
-        spawns=[dict(x=2780 + i * 34, y=1970) for i in range(10)],
+        spawns=spawn_points,
         emergency=center,
         emergency_stations=[dict(id="nexus-emergency", **center)],
         tasks=tasks,
@@ -384,17 +441,16 @@ def build():
         ],
         decorations=decor,
         navigation=dict(
-            nodes=[
-                dict(id=r["id"], x=r["bounds"]["x"] + 450, y=r["bounds"]["y"] + 260)
-                for r in rooms
-            ],
+            nodes=[dict(id=r["id"], **node_positions[r["id"]]) for r in rooms],
             edges=edges,
             routes=routes,
         ),
         occlusion=[*walls],
         audio_zones=[
             dict(
-                room_id=r["id"], surface="metal" if r["sector"] != "science" else "soft"
+                room_id=r["id"],
+                profile=r["visual"]["audioProfile"],
+                surface="metal" if r["sector"] != "science" else "soft",
             )
             for r in rooms
         ],

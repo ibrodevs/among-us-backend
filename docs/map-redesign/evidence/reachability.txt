@@ -1,0 +1,2 @@
+{'mode': 'full', 'reachable_cells': 4184, 'verified_goals': 100, 'rooms': 21}
+{'mode': 'compact', 'reachable_cells': 1875, 'verified_goals': 52, 'rooms': 9}

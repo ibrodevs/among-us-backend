@@ -28,10 +28,17 @@ def validate(mode):
                 queue.append(q)
     goals = (
         [
-            (r["id"], r["bounds"]["x"] + 450, r["bounds"]["y"] + 260)
+            (
+                r["id"],
+                next(n["x"] for n in m["navigation"]["nodes"] if n["id"] == r["id"]),
+                next(n["y"] for n in m["navigation"]["nodes"] if n["id"] == r["id"]),
+            )
             for r in m["rooms"]
             if r["id"] in active
         ]
+        + [(v["id"], v["x"], v["y"]) for v in m["vents"] if v["room_id"] in active]
+        + [(v["id"], v["x"], v["y"]) for v in m["terminals"] if v["room_id"] in active]
+        + [("spawn", v["x"], v["y"]) for v in m["spawns"]]
         + [(t["point"], t["x"], t["y"]) for t in m["tasks"] if t["room_id"] in active]
         + [
             (p["id"], p["x"], p["y"])
@@ -40,7 +47,10 @@ def validate(mode):
         ]
     )
     for name, x, y in goals:
-        assert (round(x / step), round(y / step)) in visited, (mode, name, x, y)
+        assert not blocked(x, y, m, doors), ("blocked interaction", mode, name, x, y)
+        assert any(
+            (qx * step - x) ** 2 + (qy * step - y) ** 2 < 40**2 for qx, qy in visited
+        ), (mode, name, x, y)
     for route in m["navigation"]["routes"]:
         for a, b in zip(route["waypoints"], route["waypoints"][1:]):
             count = max(1, math.ceil(math.hypot(a["x"] - b["x"], a["y"] - b["y"]) / 10))
