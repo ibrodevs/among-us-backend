@@ -12,7 +12,7 @@ def get_map(version=1):
     return json.loads(
         (
             Path(__file__).parent / ("asterion.json" if version == 2 else "v1.json")
-        ).read_text()
+        ).read_text(encoding="utf-8")
     )
 
 
