@@ -3,6 +3,7 @@
 import json
 import os
 import time
+from statistics import median
 from collections import defaultdict, deque
 from pathlib import Path
 
@@ -37,6 +38,7 @@ def flush(role, **extra):
             stats[name] = {
                 "n": len(data),
                 "mean": sum(data) / len(data),
+                "median": median(data),
                 "p95": data[int((len(data) - 1) * 0.95)],
                 "p99": data[int((len(data) - 1) * 0.99)],
             }

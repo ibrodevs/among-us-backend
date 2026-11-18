@@ -1,7 +1,8 @@
 from datetime import timedelta
 from unittest.mock import patch
 from django.test import TestCase, TransactionTestCase, skipUnlessDBFeature
-from django.db import close_old_connections, transaction, IntegrityError
+from django.db import close_old_connections, connection, transaction, IntegrityError
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
@@ -88,6 +89,32 @@ class TwentyPlayerTests(TestCase):
         actor.refresh_from_db()
         self.assertAlmostEqual(actor.x, own["x"])
         self.assertAlmostEqual(actor.y, own["y"])
+
+    def test_twenty_movement_intents_use_one_position_update(self):
+        game = self.start()
+        now = timezone.now()
+        game.last_tick_at = now
+        game.save(update_fields=["last_tick_at"])
+        game.player_states.update(direction_x=1, last_move_at=now)
+
+        with CaptureQueriesContext(connection) as queries:
+            notice, events = tick(
+                self.room.code, now=now + timedelta(milliseconds=100), invalidation_only=True
+            )
+
+        game.refresh_from_db()
+        self.assertEqual(notice, {"protocol_version": 2, "state_version": game.state_version})
+        self.assertEqual(events, [])
+        self.assertEqual(game.player_states.count(), 20)
+        statements = [query["sql"].upper() for query in queries]
+        self.assertEqual(
+            sum(sql.startswith('UPDATE "GAME_PLAYERGAMESTATE"') for sql in statements),
+            1,
+        )
+        self.assertEqual(
+            sum(sql.startswith("SELECT") and '"GAME_TASKASSIGNMENT"' in sql for sql in statements),
+            1,
+        )
 
     def test_twenty_votes_and_resume_have_no_spawn_index_error(self):
         game = self.start()

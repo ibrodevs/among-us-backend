@@ -109,11 +109,18 @@ class Command(BaseCommand):
                             if stopping.is_set():
                                 break
                             began = time.monotonic()
-                            snapshot, events = tick(code)
-                            metrics.record("tick_ms", (time.monotonic() - began) * 1000)
+                            previous_queries = queries[0]
+                            snapshot, events = tick(code, invalidation_only=True)
+                            publishing = time.monotonic()
+                            metrics.record("tick_ms", (publishing - began) * 1000)
+                            metrics.record("tick_sql", queries[0] - previous_queries)
                             publish_update(
                                 code, snapshot, events, refresh_private=bool(snapshot)
                             )
+                            if snapshot:
+                                metrics.record(
+                                    "publish_ms", (time.monotonic() - publishing) * 1000
+                                )
                         if started - cleanup > 15:
                             expire_connections()
                             cleanup = started

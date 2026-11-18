@@ -113,9 +113,12 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                 "ALREADY_AUTHENTICATED", "Open a new connection to authenticate again"
             )
         elif msg_type == "ping":
+            # Measure WebSocket transport RTT, not a PostgreSQL lease write.
+            # The authenticated connection still renews its lease and
+            # recovers durable state immediately after replying.
+            await self.send_json({"type": "pong"})
             try:
                 await self._renew_lease()
-                await self.send_json({"type": "pong"})
                 # The bus carries disposable invalidations. Recover the latest
                 # durable state even if a final invalidation was dropped.
                 await self._send_game_state()
@@ -295,14 +298,16 @@ class RoomConsumer(AsyncJsonWebsocketConsumer):
                     )
                     return
                 self.last_game_version = public["state_version"]
+                public_text = await self.encode_json(public)
+                own_text = await self.encode_json(own)
                 metrics.record(
                     "snapshot_bytes",
-                    len(json.dumps(public).encode()) + len(json.dumps(own).encode()),
+                    len(public_text.encode()) + len(own_text.encode()),
                 )
                 metrics.count("snapshot_pairs")
                 metrics.flush("api")
-                await self.send_json(public)
-                await self.send_json(own)
+                await self.send(text_data=public_text)
+                await self.send(text_data=own_text)
                 if public.get("protocol_version") == 2:
                     from game.observer_events import changes
 

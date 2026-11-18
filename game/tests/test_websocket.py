@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import AsyncMock, patch
 
 from channels.db import database_sync_to_async
@@ -173,6 +174,31 @@ class RoomWebsocketTests(TransactionTestCase):
         try:
             await self.start()
             self.assertTrue(await ws.receive_nothing(timeout=0.02))
+        finally:
+            await ws.disconnect()
+
+    async def test_pong_precedes_lease_renewal_and_preserves_snapshot_recovery(self):
+        await self.start()
+        ws = await self.connect()
+        release = asyncio.Event()
+
+        async def renew():
+            await release.wait()
+
+        try:
+            await self.auth(ws)
+            await self.receive_started(ws)
+            with patch.object(
+                RoomConsumer, "_renew_lease", new_callable=AsyncMock, side_effect=renew
+            ) as renewal:
+                try:
+                    await ws.send_json_to({"type": "ping"})
+                    self.assertEqual(await ws.receive_json_from(), {"type": "pong"})
+                finally:
+                    release.set()
+                self.assertEqual((await ws.receive_json_from())["type"], "game.snapshot")
+                self.assertEqual((await ws.receive_json_from())["type"], "game.self")
+                renewal.assert_awaited_once()
         finally:
             await ws.disconnect()
 
