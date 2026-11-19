@@ -245,6 +245,7 @@ class HostSelectedRolesTests(TestCase):
         self.assertEqual(
             client.patch(url, {"impostor_count": 1}, format="json").status_code, 200
         )
+        room.memberships.update(is_ready=True)
         with patch("game.services.start.publish_start"):
             self.assertEqual(
                 client.post(f"/api/v1/games/{room.code}/start/").status_code, 200

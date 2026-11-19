@@ -11,7 +11,7 @@ def make_room(count=4, code="ABC234"):
         settings={"map_version": 1, "impostor_count": 1}, code=code, host=players[0]
     )
     RoomMembership.objects.bulk_create(
-        [RoomMembership(room=room, player=player) for player in players]
+        [RoomMembership(room=room, player=player, is_ready=True) for player in players]
     )
     return room, players
 

@@ -108,6 +108,7 @@ class RoomApiTests(TestCase):
                     "nickname": "Ibro",
                     "is_host": True,
                     "is_connected": False,
+                    "is_ready": False,
                     "color": 0,
                 }
             ],
@@ -185,7 +186,7 @@ class RoomApiTests(TestCase):
             self.assertEqual(len(players), expected_size)
             for player in players:
                 self.assertEqual(
-                    set(player), {"id", "nickname", "is_host", "is_connected", "color"}
+                    set(player), {"id", "nickname", "is_host", "is_connected", "is_ready", "color"}
                 )
             stranger.post(JOIN, {"code": room["code"]}, format="json")
 

@@ -23,6 +23,12 @@ The clock process is mandatory for movement and timers. SQLite plus the in-memor
 - `ws(s)://host/ws/rooms/<code>/` — guest authentication, public room snapshots and private persisted role delivery, including reconnect.
 - `GET /api/v1/health/` — service health.
 
+Lobby readiness: apply migrations (including `rooms.0005`) before running this
+version. `PATCH /api/v1/rooms/<code>/ready/` accepts `{"is_ready": true}` or
+`false` for the authenticated member and returns the Room DTO, including public
+`players[].is_ready`. Every member, including the host, must be ready before
+start. Changing match settings resets readiness; readiness is locked after start.
+
 ## Team ownership
 - Kutman — branch `feature/kutman-rooms-api`: `players/`, `rooms/`, room REST/database/security
 - Iliyar — branch `feature/iliyar-game-engine`: `game/`, WebSocket/events/match state/rules/tests

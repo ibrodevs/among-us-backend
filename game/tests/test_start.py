@@ -242,7 +242,7 @@ class StartApiTests(TestCase):
             self.assertEqual(set(data), expected)
             for player in data["players"]:
                 self.assertEqual(
-                    set(player), {"id", "nickname", "is_host", "is_connected","color"}
+                    set(player), {"id", "nickname", "is_host", "is_connected", "is_ready", "color"}
                 )
 
     def test_only_post_allowed(self):

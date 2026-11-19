@@ -57,6 +57,7 @@ class RoomSerializer(serializers.ModelSerializer):
                 "nickname": m.player.nickname,
                 "is_host": m.player_id == room.host_id,
                 "is_connected": m.is_connected,
+                "is_ready": m.is_ready,
                 "color": m.color,
             }
             for m in memberships

@@ -46,6 +46,7 @@ class RoomMembership(models.Model):
     )
     color = models.PositiveSmallIntegerField(null=True, blank=True)
     is_connected = models.BooleanField(default=False)
+    is_ready = models.BooleanField(default=False)
     joined_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

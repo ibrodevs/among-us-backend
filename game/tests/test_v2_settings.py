@@ -47,6 +47,7 @@ class SettingsAndAppearanceTests(TestCase):
             403,
         )
         self.assertEqual(self.client.get(self.settings).status_code, 200)
+        self.room.memberships.update(is_ready=True)
         with patch("game.services.start.publish_start"):
             start_game(code=self.room.code, player=self.players[0])
         authorize(self.client, self.players[0])

@@ -71,6 +71,22 @@ def room_detail(request, code: str):
     return Response(RoomSerializer(get_members_room(code, request.user.player)).data)
 
 
+@api_view(["PATCH"])
+def room_ready(request, code: str):
+    with transaction.atomic():
+        room = get_object_or_404(Room.objects.select_for_update(), code=code.upper())
+        if not RoomMembership.objects.filter(room=room, player=request.user.player).exists():
+            raise PermissionDenied("You are not a member of this room")
+        if room.status != Room.Status.WAITING:
+            return Response({"detail": "Readiness is locked after start"}, status=409)
+        ready = request.data.get("is_ready") if isinstance(request.data, dict) else None
+        if type(ready) is not bool:
+            raise ValidationError({"detail": "is_ready must be a boolean"})
+        room.memberships.filter(player=request.user.player).update(is_ready=ready)
+        notify_lobby_changed(room.code)
+        return Response(RoomSerializer(room).data)
+
+
 @api_view(["POST"])
 def leave_room(request, code: str):
     with transaction.atomic():
@@ -117,13 +133,16 @@ def room_settings(request, code):
                 )
             if not isinstance(request.data, dict):
                 raise ValidationError({"detail": "Expected a settings object"})
-            room.settings = validate_settings({**settings_for(room), **request.data})
+            previous = settings_for(room)
+            room.settings = validate_settings({**previous, **request.data})
             if room.settings["max_players"] < room.memberships.count():
                 raise ValidationError(
                     {"detail": "Maximum cannot be below the current roster"}
                 )
             room.max_players = room.settings["max_players"]
             room.save(update_fields=["settings", "max_players"])
+            if room.settings != previous:
+                room.memberships.update(is_ready=False)
             notify_lobby_changed(room.code)
         return Response(settings_for(room))
 

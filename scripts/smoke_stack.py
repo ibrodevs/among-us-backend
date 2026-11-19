@@ -13,12 +13,12 @@ from urllib.request import Request, urlopen
 from websockets.asyncio.client import connect
 
 
-def post(base, path, body, token=None):
+def post(base, path, body, token=None, method="POST"):
     headers = {"Content-Type": "application/json"}
     if token:
         headers["Authorization"] = "Guest " + token
     request = Request(
-        base + path, data=json.dumps(body).encode(), headers=headers, method="POST"
+        base + path, data=json.dumps(body).encode(), headers=headers, method=method
     )
     with urlopen(request, timeout=15) as response:
         return json.load(response) if response.status != 204 else None
@@ -55,6 +55,10 @@ async def check(base):
                 await asyncio.to_thread(
                     post, base, "/api/v1/rooms/join/", {"code": code}, guest["token"]
                 )
+        for guest in guests:
+            await asyncio.to_thread(
+                post, base, f"/api/v1/rooms/{code}/ready/", {"is_ready": True}, guest["token"], "PATCH"
+            )
         started = await asyncio.to_thread(
             post, base, f"/api/v1/games/{code}/start/", {}, guests[0]["token"]
         )

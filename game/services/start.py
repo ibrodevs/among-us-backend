@@ -53,6 +53,8 @@ def start_game(*, code, player):
         roles = assign_roles(player_ids, options["impostor_count"])
     except ValueError as error:
         raise StartConflict(str(error)) from error
+    if not all(member.is_ready for member in members):
+        raise StartConflict("Все игроки должны подтвердить готовность")
     version = options["map_version"]
     mode = (
         options["area"]
